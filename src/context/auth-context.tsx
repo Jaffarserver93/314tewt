@@ -1,10 +1,13 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import type { Session, User } from "@supabase/supabase-js";
 
 type AuthContextType = {
   isLoggedIn: boolean;
+  user: User | null;
   login: () => void;
   logout: () => void;
 };
@@ -12,12 +15,37 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const login = () => setIsLoggedIn(true);
-  const logout = () => setIsLoggedIn(false);
+  const [session, setSession] = useState<Session | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const login = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "discord",
+    });
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+  };
+
+  const user = session?.user ?? null;
+  const isLoggedIn = !!user;
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
