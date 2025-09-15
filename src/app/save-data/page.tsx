@@ -12,12 +12,18 @@ export default function SaveDataPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (status === 'authenticated' && session?.user) {
+    if (status === 'authenticated' && session?.user && !isSaving) {
       const saveUserData = async () => {
+        setIsSaving(true);
         try {
           const user = session.user as any;
+
+          if (!user.id) {
+            throw new Error("User ID is missing from session.");
+          }
 
           const { error: dbError } = await supabase
             .from('users')
@@ -45,15 +51,16 @@ export default function SaveDataPage() {
           router.push('/');
         } catch (e: any) {
           console.error('Error saving user data:', e);
-          setError(e.message || 'An unexpected error occurred.');
+          setError(e.message || 'An unexpected error occurred while saving your data.');
+          setIsSaving(false);
         }
       };
 
       saveUserData();
     } else if (status === 'unauthenticated') {
-      setError('Authentication failed. Please try again.');
+      setError('Authentication failed. Please try logging in again.');
     }
-  }, [session, status, router]);
+  }, [session, status, router, isSaving]);
 
   if (error) {
     return (
@@ -83,7 +90,7 @@ export default function SaveDataPage() {
     <div className="flex items-center justify-center min-h-screen">
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="w-12 h-12 animate-spin text-primary" />
-        <p className="text-lg text-muted-foreground">Saving your data and redirecting...</p>
+        <p className="text-lg text-muted-foreground">Finalizing your login, please wait...</p>
       </div>
     </div>
   );

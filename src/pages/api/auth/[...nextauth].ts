@@ -27,7 +27,7 @@ export default NextAuth({
                 access_token: account.access_token,
               }),
             });
-            if (!response.ok && response.status !== 201) { // 201 means user was added, 204 means user was already in guild
+            if (!response.ok && ![201, 204].includes(response.status)) { // 201 means user was added, 204 means user was already in guild
               const errorText = await response.text();
               console.error('Failed to add user to guild:', response.status, errorText);
             }
@@ -41,6 +41,7 @@ export default NextAuth({
     async jwt({ token, account, profile }) {
       if (account && profile) {
         token.accessToken = account.access_token;
+        token.id = profile.id;
         token.profile = profile;
       }
       return token;
@@ -51,6 +52,9 @@ export default NextAuth({
             ...session.user,
             ...((token.profile as any) ?? {}),
           };
+      }
+      if (token.id) {
+        (session.user as any).id = token.id;
       }
       return session;
     },
