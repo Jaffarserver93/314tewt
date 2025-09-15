@@ -83,9 +83,6 @@
   }
   body {
     @apply bg-background text-foreground min-h-screen;
-    background: radial-gradient(circle at top left, hsl(var(--accent) / 0.1), transparent 40%),
-                radial-gradient(circle at bottom right, hsl(var(--primary) / 0.1), transparent 40%);
-    background-color: hsl(var(--background));
   }
 }
 
