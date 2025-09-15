@@ -1,53 +1,83 @@
 "use client";
 
-import { useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
+import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 export default function SaveDataPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === 'authenticated' && session?.user) {
       const saveUserData = async () => {
-        const user = session.user as any;
-        
-        // The user object from the session contains the Discord profile data.
-        // We need to map it correctly to our 'users' table columns.
-        const { data, error } = await supabase
-          .from('users')
-          .upsert({
-            id: user.id, // This is the Discord user ID
-            username: user.username,
-            email: user.email,
-            avatar_url: user.image,
-            role: 'user',
-            status: 'active',
-            updated_at: new Date().toISOString(),
-          }, {
-            onConflict: 'id'
-          })
-          .select()
-          .single();
+        try {
+          const user = session.user as any;
 
-        if (error) {
-          console.error('Error saving user data to Supabase:', error);
+          const { error: dbError } = await supabase
+            .from('users')
+            .upsert(
+              {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                avatar_url: user.image,
+                role: 'user',
+                status: 'active',
+                updated_at: new Date().toISOString(),
+              },
+              {
+                onConflict: 'id',
+              }
+            )
+            .select()
+            .single();
+
+          if (dbError) {
+            throw dbError;
+          }
+
+          router.push('/');
+        } catch (e: any) {
+          console.error('Error saving user data:', e);
+          setError(e.message || 'An unexpected error occurred.');
         }
-        
-        // Whether it succeeds or fails, redirect to home.
-        router.push('/');
       };
 
       saveUserData();
     } else if (status === 'unauthenticated') {
-      // If user is not authenticated for some reason, redirect to home
-      router.push('/');
+      setError('Authentication failed. Please try again.');
     }
-    // The dependency array includes session, status, and router.
   }, [session, status, router]);
+
+  if (error) {
+    return (
+       <div className="flex items-center justify-center min-h-screen">
+        <Card className="w-full max-w-md text-center glassmorphism">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-center gap-2 text-destructive">
+              <AlertTriangle />
+              Login Failed
+            </CardTitle>
+            <CardDescription>
+              There was a problem saving your information.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">{error}</p>
+            <Button onClick={() => signIn('discord')} className="w-full">
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen">

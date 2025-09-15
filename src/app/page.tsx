@@ -98,7 +98,6 @@ export default function Home() {
 
   return (
     <div className="flex flex-col font-sans text-foreground">
-      <main className="flex-grow">
       <section className="relative py-12 sm:py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
         <div className="text-center relative z-10">
           <div className="inline-flex items-center space-x-2 bg-secondary/20 border border-secondary/50 rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8 animate-fade-in-up">
@@ -237,7 +236,6 @@ export default function Home() {
           </Card>
         </div>
       </section>
-      </main>
     </div>
   );
 }
