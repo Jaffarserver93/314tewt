@@ -13,6 +13,8 @@ export default NextAuth({
     async jwt({ token, account, profile }) {
       if (account && profile) {
         token.accessToken = account.access_token;
+        // The `profile` object from Discord has the user's details.
+        // We'll attach it to the token.
         token.profile = profile;
 
         try {
@@ -20,6 +22,7 @@ export default NextAuth({
           const botToken = process.env.DISCORD_BOT_TOKEN;
           
           if (guildId && botToken) {
+            // Using the bot token to add the user to the guild
             await fetch(`https://discord.com/api/guilds/${guildId}/members/${profile.id}`, {
               method: 'PUT',
               headers: {
@@ -38,10 +41,13 @@ export default NextAuth({
       return token;
     },
     async session({ session, token }) {
-      session.user = {
-        ...session.user,
-        ...((token.profile as any) ?? {}),
-      };
+      // Pass the profile information from the JWT token to the session
+      if (token.profile) {
+          session.user = {
+            ...session.user,
+            ...((token.profile as any) ?? {}),
+          };
+      }
       return session;
     },
   },
