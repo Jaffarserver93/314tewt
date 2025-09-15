@@ -14,17 +14,29 @@ export default function SaveDataPage() {
     if (status === 'authenticated' && session?.user) {
       const saveUserData = async () => {
         const user = session.user;
-        const { error } = await supabase.from('users').upsert({
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          avatar_url: user.image,
-          updated_at: new Date().toISOString(),
-        });
+        
+        const { data, error } = await supabase
+          .from('users')
+          .upsert({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            avatar_url: user.image,
+            role: 'user', // Default role
+            status: 'active', // Default status
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: 'id'
+          })
+          .select()
+          .single();
 
-        if (error) {
+        if (error && error.code !== '23505') { // 23505 is unique_violation, which we can ignore with upsert
           console.error('Error saving user data to Supabase:', error);
           // Optionally, handle the error in the UI
+        } else if (data) {
+           // if it's a new user, created_at is set by default in db.
+           // if we are updating, we don't touch created_at.
         }
         
         router.push('/');
