@@ -1,3 +1,22 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "testimonial-1",
+      "description": "Avatar for Priya Sharma",
+      "imageUrl": "https://picsum.photos/seed/101/100/100",
+      "imageHint": "woman face"
+    },
+    {
+      "id": "testimonial-2",
+      "description": "Avatar for Rohan Patel",
+      "imageUrl": "https://picsum.photos/seed/102/100/100",
+      "imageHint": "man face"
+    },
+    {
+      "id": "testimonial-3",
+      "description": "Avatar for Anjali Singh",
+      "imageUrl": "https://picsum.photos/seed/103/100/100",
+      "imageHint": "woman portrait"
+    }
+  ]
 }
