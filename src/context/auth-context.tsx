@@ -12,5 +12,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 // NOTE: useAuth hook is no longer needed with next-auth, useSession can be used directly in components.
-// If you have components that use useAuth(), they will need to be updated to use useSession() from next-auth/react.
 // For example: const { data: session } = useSession(); const user = session?.user;
+// You can also now use the supabase client to interact with your database.

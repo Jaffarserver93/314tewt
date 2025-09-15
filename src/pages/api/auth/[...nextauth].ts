@@ -10,11 +10,8 @@ export default NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, account, profile }) {
+    async signIn({ user, account, profile }) {
       if (account && profile) {
-        token.accessToken = account.access_token;
-        token.profile = profile;
-
         try {
           const guildId = process.env.DISCORD_GUILD_ID;
           const botToken = process.env.DISCORD_BOT_TOKEN;
@@ -30,7 +27,7 @@ export default NextAuth({
                 access_token: account.access_token,
               }),
             });
-            if (!response.ok) {
+            if (!response.ok && response.status !== 201) { // 201 means user was added, 204 means user was already in guild
               const errorText = await response.text();
               console.error('Failed to add user to guild:', response.status, errorText);
             }
@@ -38,6 +35,13 @@ export default NextAuth({
         } catch (error) {
           console.error('Error adding user to guild:', error);
         }
+      }
+      return '/save-data';
+    },
+    async jwt({ token, account, profile }) {
+      if (account && profile) {
+        token.accessToken = account.access_token;
+        token.profile = profile;
       }
       return token;
     },
