@@ -13,17 +13,19 @@ export default function SaveDataPage() {
   useEffect(() => {
     if (status === 'authenticated' && session?.user) {
       const saveUserData = async () => {
-        const user = session.user;
+        const user = session.user as any;
         
+        // The user object from the session contains the Discord profile data.
+        // We need to map it correctly to our 'users' table columns.
         const { data, error } = await supabase
           .from('users')
           .upsert({
-            id: user.id,
+            id: user.id, // This is the Discord user ID
             username: user.username,
             email: user.email,
             avatar_url: user.image,
-            role: 'user', // Default role
-            status: 'active', // Default status
+            role: 'user',
+            status: 'active',
             updated_at: new Date().toISOString(),
           }, {
             onConflict: 'id'
@@ -31,22 +33,20 @@ export default function SaveDataPage() {
           .select()
           .single();
 
-        if (error && error.code !== '23505') { // 23505 is unique_violation, which we can ignore with upsert
+        if (error) {
           console.error('Error saving user data to Supabase:', error);
-          // Optionally, handle the error in the UI
-        } else if (data) {
-           // if it's a new user, created_at is set by default in db.
-           // if we are updating, we don't touch created_at.
         }
         
+        // Whether it succeeds or fails, redirect to home.
         router.push('/');
       };
 
       saveUserData();
     } else if (status === 'unauthenticated') {
-      // If user is not authenticated, redirect to home
+      // If user is not authenticated for some reason, redirect to home
       router.push('/');
     }
+    // The dependency array includes session, status, and router.
   }, [session, status, router]);
 
   return (
