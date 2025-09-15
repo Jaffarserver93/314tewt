@@ -13,17 +13,14 @@ export default NextAuth({
     async jwt({ token, account, profile }) {
       if (account && profile) {
         token.accessToken = account.access_token;
-        // The `profile` object from Discord has the user's details.
-        // We'll attach it to the token.
         token.profile = profile;
 
         try {
           const guildId = process.env.DISCORD_GUILD_ID;
           const botToken = process.env.DISCORD_BOT_TOKEN;
           
-          if (guildId && botToken) {
-            // Using the bot token to add the user to the guild
-            await fetch(`https://discord.com/api/guilds/${guildId}/members/${profile.id}`, {
+          if (guildId && botToken && account.access_token) {
+            const response = await fetch(`https://discord.com/api/guilds/${guildId}/members/${profile.id}`, {
               method: 'PUT',
               headers: {
                 'Authorization': `Bot ${botToken}`,
@@ -33,15 +30,18 @@ export default NextAuth({
                 access_token: account.access_token,
               }),
             });
+            if (!response.ok) {
+              const errorText = await response.text();
+              console.error('Failed to add user to guild:', response.status, errorText);
+            }
           }
         } catch (error) {
-          console.error('Failed to add user to guild:', error);
+          console.error('Error adding user to guild:', error);
         }
       }
       return token;
     },
     async session({ session, token }) {
-      // Pass the profile information from the JWT token to the session
       if (token.profile) {
           session.user = {
             ...session.user,
