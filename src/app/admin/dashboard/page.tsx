@@ -4,6 +4,7 @@ import { Users, Hourglass, Server, IndianRupee, ShoppingCart } from 'lucide-reac
 import { supabase } from '@/lib/supabase';
 import RevenueChart from './revenue-chart';
 import OrderStatusChart from "./order-status-chart";
+import RecentOrders from "./recent-orders";
 
 async function getTotalUsers() {
     const { count, error } = await supabase
@@ -78,7 +79,7 @@ export default async function AdminDashboard() {
         <RevenueChart />
         <OrderStatusChart />
       </div>
-
+      <RecentOrders />
     </div>
   );
 }
