@@ -1,4 +1,5 @@
 
+
 export interface TLD {
   id: number;
   name: string;
@@ -15,4 +16,16 @@ export interface DomainFeature {
     icon: string;
     title: string;
     description: string;
+}
+
+export interface MinecraftPlan {
+  id: number;
+  name: string;
+  category: 'budget' | 'powered' | 'premium';
+  price: number;
+  ram: string;
+  storage: string;
+  cpu: string;
+  slots: string;
+  is_popular: boolean;
 }
