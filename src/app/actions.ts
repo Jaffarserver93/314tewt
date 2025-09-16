@@ -1,0 +1,111 @@
+'use server';
+
+import { z } from 'zod';
+import { supabase } from '@/lib/supabase';
+import { revalidatePath } from 'next/cache';
+import type { AppUser } from '@/types/next-auth';
+
+const addUserFormSchema = z.object({
+  discordUsername: z.string().min(2, "Username must be at least 2 characters."),
+  email: z.string().email("Invalid email address."),
+  role: z.enum(['user', 'staff', 'manager', 'admin', 'super admin']),
+});
+
+function toAppUser(dbUser: any): AppUser {
+    return {
+        id: dbUser.id,
+        discordUsername: dbUser.username,
+        email: dbUser.email,
+        image: dbUser.avatar_url,
+        role: dbUser.role,
+        status: dbUser.status,
+        createdAt: dbUser.created_at,
+    };
+}
+
+
+export async function addUserAction(values: z.infer<typeof addUserFormSchema>) {
+  try {
+    const { data: newUser, error } = await supabase
+      .from('users')
+      .insert({
+        // A real implementation would generate a real Discord ID or use a different auth method
+        id: `demo-${Math.random().toString(36).substring(2, 9)}`, 
+        username: values.discordUsername,
+        email: values.email,
+        role: values.role,
+        status: 'active',
+        avatar_url: `https://i.pravatar.cc/150?u=${values.email}`,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    
+    revalidatePath('/admin/users');
+    return { success: true, message: 'User added successfully.', user: toAppUser(newUser) };
+  } catch (error: any) {
+    return { success: false, message: error.message };
+  }
+}
+
+
+export async function toggleUserStatusAction(userId: string) {
+  try {
+    const { data: user, error: fetchError } = await supabase
+      .from('users')
+      .select('status')
+      .eq('id', userId)
+      .single();
+
+    if (fetchError || !user) throw new Error("User not found.");
+
+    const newStatus = user.status === 'active' ? 'banned' : 'active';
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ status: newStatus })
+      .eq('id', userId);
+
+    if (updateError) throw updateError;
+    
+    revalidatePath('/admin/users');
+    return { success: true, message: `User status updated to ${newStatus}.` };
+  } catch (error: any) {
+    return { success: false, message: error.message };
+  }
+}
+
+export async function deleteUserAction(userId: string) {
+  try {
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', userId);
+
+    if (error) throw error;
+    
+    revalidatePath('/admin/users');
+    return { success: true, message: 'User deleted successfully.' };
+  } catch (error: any) {
+    return { success: false, message: error.message };
+  }
+}
+
+
+export async function updateUserRoleAction(userId: string, role: AppUser['role']) {
+  try {
+    const { data: updatedUser, error } = await supabase
+      .from('users')
+      .update({ role })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    
+    revalidatePath('/admin/users');
+    return { success: true, message: 'User role updated.', user: toAppUser(updatedUser) };
+  } catch (error: any) {
+    return { success: false, message: error.message };
+  }
+}
