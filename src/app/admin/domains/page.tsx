@@ -46,3 +46,5 @@ export default async function DomainsAdminPage() {
 
     return <DomainsClientPage initialTlds={tlds} />;
 }
+
+    
