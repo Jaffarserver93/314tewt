@@ -83,10 +83,12 @@ export const authOptions: NextAuthOptions = {
           .eq('id', userId)
           .single();
 
-        if (error) {
+        if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
           console.error('Error fetching user role from Supabase:', error);
         } else if (userData) {
           (session.user as any).role = userData.role;
+        } else {
+          (session.user as any).role = 'user'; // Default role for new users
         }
       }
       return session;

@@ -155,3 +155,42 @@ export async function createOrderAction(values: z.infer<typeof createOrderSchema
     }
 }
 
+
+export async function confirmOrderAction(orderId: string) {
+    try {
+        const { error } = await supabase
+            .from('orders')
+            .update({ status: 'confirmed' })
+            .eq('id', orderId);
+        if (error) throw error;
+        revalidatePath('/admin/order');
+        return { success: true, message: 'Order confirmed successfully.' };
+    } catch (error: any) {
+        return { success: false, message: error.message || 'Failed to confirm order.' };
+    }
+}
+
+export async function cancelOrderAction(orderId: string) {
+    try {
+        const { error } = await supabase
+            .from('orders')
+            .update({ status: 'cancelled' })
+            .eq('id', orderId);
+        if (error) throw error;
+        revalidatePath('/admin/order');
+        return { success: true, message: 'Order cancelled successfully.' };
+    } catch (error: any) {
+        return { success: false, message: error.message || 'Failed to cancel order.' };
+    }
+}
+
+export async function deleteOrderAction(orderId: string) {
+    try {
+        const { error } = await supabase.from('orders').delete().eq('id', orderId);
+        if (error) throw error;
+        revalidatePath('/admin/order');
+        return { success: true, message: 'Order deleted successfully.' };
+    } catch (error: any) {
+        return { success: false, message: error.message || 'Failed to delete order.' };
+    }
+}
