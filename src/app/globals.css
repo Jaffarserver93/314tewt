@@ -152,7 +152,7 @@
   }
   
   .header-glass {
-    @apply bg-background/80 backdrop-blur-xl;
+    @apply bg-background/80 backdrop-blur-sm;
   }
 
   .text-shadow {
