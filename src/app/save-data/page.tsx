@@ -25,24 +25,36 @@ export default function SaveDataPage() {
             throw new Error("User ID is missing from session.");
           }
 
+          // Check if user already exists
+          const { data: existingUser, error: fetchError } = await supabase
+            .from('users')
+            .select('id, role')
+            .eq('id', user.id)
+            .single();
+
+          if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116: "exact-one" violation (user not found)
+            throw fetchError;
+          }
+          
+          let upsertData: any = {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            avatar_url: user.image,
+            status: 'active',
+            updated_at: new Date().toISOString(),
+          };
+
+          if (!existingUser) {
+            // This is a new user, set the default role.
+            upsertData.role = 'user';
+          }
+          // If the user exists, we do NOT include the role in the upsert data,
+          // so the existing role is preserved.
+
           const { error: dbError } = await supabase
             .from('users')
-            .upsert(
-              {
-                id: user.id,
-                username: user.username,
-                email: user.email,
-                avatar_url: user.image,
-                role: 'user', // Default role for new users
-                status: 'active',
-                updated_at: new Date().toISOString(),
-              },
-              {
-                onConflict: 'id',
-              }
-            )
-            .select()
-            .single();
+            .upsert(upsertData, { onConflict: 'id' });
 
           if (dbError) {
             throw dbError;
