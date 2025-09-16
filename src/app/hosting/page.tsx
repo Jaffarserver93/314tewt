@@ -1,20 +1,74 @@
 
-import { supabase } from '@/lib/supabase';
-import type { MinecraftPlan } from '@/lib/types';
+import React from 'react';
+import Link from 'next/link';
+import { ArrowLeft, Gamepad2, Zap, Shield, Users, CheckCircle, Star, Server } from 'lucide-react';
+import MinecraftHero from './MinecraftHero';
 import HostingClientPage from './hosting-client-page';
-import BackButton from './back-button';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import type { MinecraftPlan } from '@/lib/types';
 import ScrollToPlansButton from './ScrollToPlansButton';
-import {
-  Zap,
-  ShieldCheck,
-  Server,
-  HelpCircle,
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
+import { supabase } from '@/lib/supabase';
+import BackButton from './back-button';
 
+
+const features = [
+  {
+    icon: <Zap className="w-8 h-8 text-white" />,
+    title: "Lightning Fast Performance",
+    description: "NVMe SSD storage and high-frequency CPUs ensure your server loads instantly and runs smoothly.",
+    points: ["NVMe SSD Storage", "High-Frequency CPUs", "Instant World Loading"],
+    color: "from-green-500 to-emerald-500",
+    shadow: "shadow-green-500/25",
+    hoverBorder: "hover:border-green-500/30",
+  },
+  {
+    icon: <Shield className="w-8 h-8 text-white" />,
+    title: "Enterprise Security",
+    description: "Advanced DDoS protection and security measures keep your server safe from attacks.",
+    points: ["DDoS Protection", "Firewall Security", "Regular Backups"],
+    color: "from-blue-500 to-cyan-500",
+    shadow: "shadow-blue-500/25",
+    hoverBorder: "hover:border-blue-500/30",
+  },
+  {
+    icon: <Users className="w-8 h-8 text-white" />,
+    title: "24/7 Expert Support",
+    description: "Our dedicated support team is always ready to help you with any issues or questions.",
+    points: ["24/7 Live Support", "Discord Community", "Expert Assistance"],
+    color: "from-purple-500 to-pink-500",
+    shadow: "shadow-purple-500/25",
+    hoverBorder: "hover:border-purple-500/30",
+  },
+  {
+    icon: <Gamepad2 className="w-8 h-8 text-white" />,
+    title: "Indian Locations",
+    description: "Servers located in India ensure the lowest latency for Indian players.",
+    points: ["Mumbai Data Center", "Low Latency", "Optimized for India"],
+    color: "from-orange-500 to-yellow-500",
+    shadow: "shadow-orange-500/25",
+    hoverBorder: "hover:border-orange-500/30",
+  },
+  {
+    icon: <Star className="w-8 h-8 text-white" />,
+    title: "Easy Management",
+    description: "Intuitive control panel makes server management simple for beginners and experts alike.",
+    points: ["One-Click Setup", "Plugin Manager", "File Manager"],
+    color: "from-pink-500 to-rose-500",
+    shadow: "shadow-pink-500/25",
+    hoverBorder: "hover:border-pink-500/30",
+  },
+  {
+    icon: <CheckCircle className="w-8 h-8 text-white" />,
+    title: "99.9% Uptime",
+    description: "Reliable infrastructure ensures your server stays online when your players need it most.",
+    points: ["Redundant Systems", "Monitoring 24/7", "SLA Guarantee"],
+    color: "from-indigo-500 to-purple-500",
+    shadow: "shadow-indigo-500/25",
+    hoverBorder: "hover:border-indigo-500/30",
+  }
+];
 
 async function getMinecraftPlans(): Promise<MinecraftPlan[]> {
   const { data, error } = await supabase
@@ -29,80 +83,61 @@ async function getMinecraftPlans(): Promise<MinecraftPlan[]> {
   return data;
 }
 
-const features = [
-  {
-    icon: <Zap className="w-8 h-8 text-primary" />,
-    title: 'Instant Setup',
-    description:
-      'Your server is up and running within minutes of your purchase. No waiting, just playing.',
-  },
-  {
-    icon: <ShieldCheck className="w-8 h-8 text-primary" />,
-    title: 'DDoS Protection',
-    description:
-      'We provide robust protection against DDoS attacks to keep your server online and secure.',
-  },
-  {
-    icon: <Server className="w-8 h-8 text-primary" />,
-    title: 'Indian Locations',
-    description:
-      'Get the lowest latency with our servers located in India, ensuring a smooth gaming experience.',
-  },
-  {
-    icon: <HelpCircle className="w-8 h-8 text-primary" />,
-    title: '24/7 Support',
-    description:
-      'Our expert support team is always available to help you with any issues or questions.',
-  },
-];
+export default async function HostingPage() {
+  const initialPlans = await getMinecraftPlans();
 
-const faqs = [
-  {
-    question: 'Can I upgrade my plan later?',
-    answer:
-      'Yes, you can easily upgrade your plan at any time from your client area. Your files and settings will be preserved.',
-  },
-  {
-    question: 'Do you offer a money-back guarantee?',
-    answer:
-      'We offer a 48-hour money-back guarantee. If you are not satisfied with our service, you can request a full refund within 48 hours of your purchase.',
-  },
-  {
-    question: 'Can I use a custom JAR file?',
-    answer:
-      'Absolutely! You have full control to upload and use your own custom server JAR files.',
-  },
-  {
-    question: 'What payment methods do you accept?',
-    answer:
-      'We accept a wide variety of payment methods, including UPI, credit/debit cards, net banking, and major wallets.',
-  },
-];
+  const staticContent = (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-green-900/20 text-foreground font-sans">
+        <div className="relative">
+            <div className="absolute top-8 left-4 sm:left-6 lg:left-8 z-20">
+               <BackButton />
+            </div>
+            <MinecraftHero />
+        </div>
 
-const StaticContent = () => (
-  <div className="container mx-auto py-12 px-4 md:px-6">
-    <BackButton />
-    <header className="text-center mb-16">
-      <h1 className="text-5xl md:text-6xl font-bold mb-4">
-        Minecraft Hosting
-      </h1>
-      <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-        High-performance, lag-free Minecraft server hosting with Indian
-        locations for the ultimate gaming experience.
-      </p>
-    </header>
-  </div>
-);
+        <section className="py-20 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto">
+              <div className="text-center mb-16">
+                <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+                  Why Choose JXFRCloud™?
+                </h2>
+                <p className="text-xl dark:text-muted-foreground max-w-3xl mx-auto">
+                  Experience the difference with our premium Minecraft hosting infrastructure
+                </p>
+              </div>
 
-export default async function MinecraftHostingPage() {
-  const plans = await getMinecraftPlans();
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {features.map((feature, index) => (
+                    <Card key={index} className={cn("glassmorphism p-8 rounded-2xl group transition-all duration-500 transform-gpu hover:scale-105 active:scale-[1.02]", feature.hoverBorder)}>
+                      <div className={cn("w-16 h-16 bg-gradient-to-r rounded-2xl flex items-center justify-center mb-6 shadow-lg animate-pulse", feature.color, feature.shadow)}>
+                        {feature.icon}
+                      </div>
+                      <h3 className="text-2xl font-bold text-foreground mb-4">{feature.title}</h3>
+                      <p className="dark:text-muted-foreground mb-6 leading-relaxed">
+                        {feature.description}
+                      </p>
+                      <ul className="space-y-2">
+                        {feature.points.map((point, i) => (
+                           <li key={i} className="flex items-center dark:text-muted-foreground">
+                            <CheckCircle className="w-4 h-4 mr-3 text-green-400" />
+                            <span className="text-sm">{point}</span>
+                          </li>
+                        ))}
+                      </ul>
+                  </Card>
+                ))}
+              </div>
+            </div>
+        </section>
+
+        {/* This empty section is the anchor for scrolling */}
+        <div id="pricing"></div>
+    </div>
+  );
 
   return (
-    <HostingClientPage
-      initialPlans={plans}
-      staticContent={<StaticContent />}
-    >
-      <ScrollToPlansButton />
-    </HostingClientPage>
+     <HostingClientPage initialPlans={initialPlans} staticContent={staticContent}>
+        <ScrollToPlansButton />
+     </HostingClientPage>
   );
-}
+};
