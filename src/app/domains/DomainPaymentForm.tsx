@@ -1,57 +1,353 @@
 
-"use client";
+'use client';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
+import React, { useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useTheme } from 'next-themes';
+import { ArrowLeft, User, Mail, MessageCircle, Send, CheckCircle, Globe, ExternalLink, Copy, Home as HomeIcon, Building, MapPin, Hash, LandPlot } from 'lucide-react';
+import { createOrderAction } from '@/app/actions';
 import type { TLD } from '@/lib/types';
 
 interface DomainPaymentFormProps {
-  selectedDomain: {
-    domain: string;
-    tld: TLD;
-  };
+  selectedDomain: {domain: string, tld: TLD};
   onBack: () => void;
 }
 
-export default function DomainPaymentForm({ selectedDomain, onBack }: DomainPaymentFormProps) {
-  const { domain, tld } = selectedDomain;
+const DomainPaymentForm: React.FC<DomainPaymentFormProps> = ({ selectedDomain, onBack }) => {
+  const { data: session, status } = useSession();
+  const { theme } = useTheme();
+
+  const [formData, setFormData] = useState({
+    firstName: session?.user?.name?.split(' ')[0] || '',
+    lastName: session?.user?.name?.split(' ').slice(1).join(' ') || '',
+    email: session?.user?.email || '',
+    discordUsername: (session?.user as any)?.username || '',
+    address: {
+      line1: '',
+      line2: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: 'India',
+    },
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [orderId, setOrderId] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const fullDomainName = `${selectedDomain.domain}${selectedDomain.tld.name}`;
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    if ((name === 'discordUsername' || name === 'email') && status === 'authenticated') {
+      return;
+    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    if (name === 'postalCode') {
+        const numericValue = value.replace(/[^0-9]/g, '');
+        if (numericValue.length <= 6) {
+             setFormData(prev => ({
+                ...prev,
+                address: {
+                    ...prev.address,
+                    [name]: numericValue,
+                }
+            }));
+        }
+    } else {
+        setFormData(prev => ({
+            ...prev,
+            address: {
+                ...prev.address,
+                [name]: value,
+            }
+        }));
+    }
+  };
+
+  const getThemeClasses = () => {
+    const currentTheme = theme || 'dark';
+    switch (currentTheme) {
+      case 'light':
+        return {
+          bg: 'bg-gradient-to-br from-gray-50 via-pink-50 to-gray-100',
+          card: 'bg-white/90 backdrop-blur-sm border-gray-200',
+          text: 'text-gray-900',
+          textSecondary: 'text-gray-600',
+          button: 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600',
+          input: 'bg-white/80 border-gray-300 text-gray-900 placeholder-gray-500'
+        };
+      default: // dark or glass
+        return {
+          bg: 'bg-gradient-to-br from-slate-900 via-gray-900 to-pink-900/20',
+          card: 'bg-white/10 backdrop-blur-md border-white/20',
+          text: 'text-white',
+          textSecondary: 'text-gray-300',
+          button: 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600',
+          input: 'bg-white/10 border-white/20 text-white placeholder-gray-400'
+        };
+    }
+  };
+
+  const themeStyles = getThemeClasses();
+
+  const sendToDiscord = async (generatedOrderId: string) => {
+    const webhookUrl = 'https://discord.com/api/webhooks/1393999338329604126/zo9VrQY1cyoLp4ZgLpf8BytjQKF_nH6rYgZHAVDhF8L2IIOod2fdbWv04ds072olZ6Wl';
+    
+    const embed = {
+      title: '🌐 New Domain Registration Order!',
+      color: 0xec4899,
+      fields: [
+          { name: '🆔 Order ID', value: `\`${generatedOrderId}\`` },
+          { name: '🌐 Domain', value: `\`${fullDomainName}\``},
+          {
+              name: '👤 Customer Information',
+              value: `**Name:** ${formData.firstName} ${formData.lastName}\n**Email:** ${formData.email}\n**Discord:** ${formData.discordUsername}`
+          },
+          {
+              name: '📍 Address',
+              value: `${formData.address.line1}\n${formData.address.line2 ? formData.address.line2 + '\n' : ''}${formData.address.city}, ${formData.address.state} ${formData.address.postalCode}\n${formData.address.country}`
+          },
+          {
+              name: '💰 Price',
+              value: `**Total:** ₹${selectedDomain.tld.price}/year`
+          }
+      ],
+      timestamp: new Date().toISOString(),
+      footer: { text: 'JXFRCloud™ Domain Registration' }
+    };
+
+    try {
+      await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ embeds: [embed] }),
+      });
+    } catch (error) {
+      console.log('Error sending domain order to Discord:', error);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!session?.user) {
+        alert("You must be logged in to place an order.");
+        return;
+    }
+    setIsSubmitting(true);
+    
+    const orderPayload = {
+        userId: (session.user as any).id,
+        type: 'domain' as const,
+        planName: fullDomainName,
+        price: `${selectedDomain.tld.price}/year`,
+        status: 'pending' as const,
+        customerInfo: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          discordUsername: formData.discordUsername,
+          address: formData.address,
+        }
+    };
+    
+    const result = await createOrderAction(orderPayload);
+
+    if (result.success && result.order) {
+        setOrderId(result.order.id);
+        await sendToDiscord(result.order.id);
+        setIsSubmitted(true);
+    } else {
+        console.error("Failed to create domain order:", result.message);
+        alert(`Error: ${result.message || 'An unknown error occurred.'}`);
+    }
+    
+    setIsSubmitting(false);
+  };
+
+  if (isSubmitted) {
+    return (
+      <div className={`min-h-screen ${themeStyles.bg} flex items-center justify-center p-4`}>
+        <div className={`max-w-md w-full ${themeStyles.card} rounded-2xl p-6 sm:p-8 text-center`}>
+          <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+            <CheckCircle className="w-8 h-8 text-white" />
+          </div>
+          <h2 className={`text-xl sm:text-2xl font-bold ${themeStyles.text} mb-4`}>Order Submitted Successfully!</h2>
+          
+          <div className={`${themeStyles.card} p-4 rounded-xl mb-6 border`}>
+            <p className={`text-sm ${themeStyles.textSecondary} mb-2`}>Your Order ID:</p>
+            <div className="flex items-center justify-center space-x-2">
+              <span className={`text-lg font-bold ${themeStyles.text} font-mono`}>{orderId}</span>
+              <button
+                onClick={() => copyToClipboard(orderId)}
+                className={`p-2 ${themeStyles.button} text-white rounded-lg transition-all duration-300 hover:scale-105`}
+                title="Copy Order ID"
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+            </div>
+            {copied && <p className="text-green-400 text-xs mt-2">Copied to clipboard!</p>}
+          </div>
+
+          <p className={`${themeStyles.textSecondary} mb-6 text-sm sm:text-base`}>
+            Your domain registration order has been received. Create a ticket on Discord with this ID <strong>{orderId}</strong> and our team will contact you for payment and to finalize the registration.
+          </p>
+          
+          <div className="mb-6">
+            <a
+              href="https://discord.gg/1388084142075547680"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`w-full ${themeStyles.button} text-white py-3 px-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center mb-4 text-sm sm:text-base`}
+            >
+              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              Join Discord & Create Ticket
+              <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+            </a>
+          </div>
+
+          <button
+            onClick={onBack}
+            className={`w-full bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg font-semibold transition-all duration-300 text-sm sm:text-base`}
+          >
+            Back to Domain Search
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto py-12 px-4 md:px-6">
-        <div className="max-w-2xl mx-auto">
-             <Button variant="ghost" onClick={onBack} className="mb-4">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Search
-            </Button>
-            <Card className="glassmorphism">
-                <CardHeader>
-                    <CardTitle>Complete Your Purchase</CardTitle>
-                    <CardDescription>You are about to register a new domain.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                     <div className="p-4 border rounded-lg bg-background/50">
-                        <p className="text-lg font-bold">{domain}{tld.name}</p>
-                        <p className="text-2xl font-bold text-primary">₹{tld.price}/year</p>
-                        {tld.originalPrice && (
-                            <p className="text-sm text-muted-foreground">
-                                Renews at <span className="line-through">₹{tld.originalPrice}</span>
-                            </p>
-                        )}
+    <div className={`min-h-screen ${themeStyles.bg} py-4 sm:py-8 px-4 sm:px-6 lg:px-8`}>
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-6 sm:mb-8">
+          <button
+            onClick={onBack}
+            className={`flex items-center ${themeStyles.textSecondary} hover:text-pink-400 transition-colors text-sm sm:text-base`}
+          >
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+            Back to Domain Search
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+          {/* Order Summary */}
+          <div className={`${themeStyles.card} rounded-2xl p-4 sm:p-6 h-fit order-2 xl:order-1`}>
+            <h2 className={`text-xl sm:text-2xl font-bold ${themeStyles.text} mb-4 sm:mb-6`}>Order Summary</h2>
+            
+            <div className={`flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 ${themeStyles.card} rounded-xl`}>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-pink-500 to-rose-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Globe className="w-5 h-5 text-white"/>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className={`text-base sm:text-lg font-semibold ${themeStyles.text} truncate`}>{fullDomainName}</h3>
+                 <p className={`${themeStyles.textSecondary} text-sm`}>1 Year Registration</p>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <div className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>
+                  ₹{selectedDomain.tld.price}
+                </div>
+                <div className={`text-xs sm:text-sm ${themeStyles.textSecondary}`}>/year</div>
+              </div>
+            </div>
+            
+            <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} mt-6 pt-4`}>
+              <div className="flex justify-between items-center">
+                <span className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>Total</span>
+                <span className="text-xl sm:text-2xl font-bold text-pink-400">₹{selectedDomain.tld.price}/year</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Order Form */}
+          <div className={`${themeStyles.card} rounded-2xl p-4 sm:p-6 order-1 xl:order-2`}>
+            <h2 className={`text-xl sm:text-2xl font-bold ${themeStyles.text} mb-4 sm:mb-6`}>Registrant Information</h2>
+            
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}><User className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />First Name *</label>
+                  <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} required className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm sm:text-base`} placeholder="Enter first name" />
+                </div>
+                <div>
+                  <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}><User className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />Last Name *</label>
+                  <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} required className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm sm:text-base`} placeholder="Enter last name" />
+                </div>
+              </div>
+
+              <div>
+                <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}><Mail className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />Email Address *</label>
+                <input type="email" name="email" value={formData.email} onChange={handleInputChange} required className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm sm:text-base ${status === 'authenticated' ? 'opacity-75 cursor-not-allowed' : ''}`} placeholder="Enter email address" readOnly={status === 'authenticated'} />
+                 {status === 'authenticated' && <p className={`text-xs ${themeStyles.textSecondary} mt-1 flex items-center`}><CheckCircle className="w-3 h-3 mr-1 text-green-400" />Auto-filled from Discord</p>}
+              </div>
+
+              <div>
+                <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}><MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />Discord Username *</label>
+                <input type="text" name="discordUsername" value={(formData.discordUsername)} onChange={handleInputChange} required className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm sm:text-base ${status === 'authenticated' ? 'opacity-75 cursor-not-allowed font-mono' : ''}`} placeholder="Enter Discord username" readOnly={status === 'authenticated'} />
+                {status === 'authenticated' && <p className={`text-xs ${themeStyles.textSecondary} mt-1 flex items-center`}><CheckCircle className="w-3 h-3 mr-1 text-green-400" />Auto-filled from Discord</p>}
+              </div>
+
+              <div className="border-t border-white/20 pt-4">
+                 <h3 className={`text-lg font-semibold ${themeStyles.text} mb-4`}>Billing Address</h3>
+                 <div className="space-y-4">
+                    <div>
+                        <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}><HomeIcon className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />Address Line 1 *</label>
+                        <input type="text" name="line1" value={formData.address.line1} onChange={handleAddressChange} required className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm sm:text-base`} placeholder="Street address, P.O. box" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-semibold mb-4">Payment Details</h3>
-                        <div className="h-32 flex items-center justify-center border-2 border-dashed rounded-lg">
-                            <p className="text-muted-foreground">Payment form placeholder</p>
+                        <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}><Building className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />Address Line 2 (Optional)</label>
+                        <input type="text" name="line2" value={formData.address.line2} onChange={handleAddressChange} className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm sm:text-base`} placeholder="Apartment, suite, unit, building" />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}><MapPin className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />City *</label>
+                            <input type="text" name="city" value={formData.address.city} onChange={handleAddressChange} required className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm sm:text-base`} placeholder="City" />
+                        </div>
+                        <div>
+                            <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}><LandPlot className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />State / Province *</label>
+                            <input type="text" name="state" value={formData.address.state} onChange={handleAddressChange} required className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm sm:text-base`} placeholder="State" />
                         </div>
                     </div>
-                    <Button size="lg" className="w-full">
-                        Pay ₹{tld.price} and Register
-                    </Button>
-                </CardContent>
-            </Card>
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}><Hash className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />Postal Code *</label>
+                            <input type="text" inputMode="numeric" pattern="[0-9]*" name="postalCode" value={formData.address.postalCode} onChange={handleAddressChange} required className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm sm:text-base`} placeholder="Postal Code" maxLength={6} />
+                        </div>
+                        <div>
+                            <label className={`block text-xs sm:text-sm font-medium ${themeStyles.textSecondary} mb-2`}><Globe className="w-3 h-3 sm:w-4 sm:h-4 inline mr-2" />Country *</label>
+                            <input type="text" name="country" value={formData.address.country} readOnly className={`w-full px-3 sm:px-4 py-2 sm:py-3 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm sm:text-base opacity-75 cursor-not-allowed`} />
+                        </div>
+                    </div>
+                 </div>
+              </div>
+
+              <button type="submit" disabled={isSubmitting || !formData.firstName || !formData.lastName || !formData.email || !formData.discordUsername || !formData.address.line1 || !formData.address.city || !formData.address.state || !formData.address.postalCode} className={`w-full ${themeStyles.button} disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 sm:py-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center text-sm sm:text-base`}>
+                {isSubmitting ? (
+                  <><div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:h-5 border-b-2 border-white mr-2 sm:mr-3"></div>Processing...</>
+                ) : (
+                  <><Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />Submit Order</>
+                )}
+              </button>
+            </form>
+          </div>
         </div>
+      </div>
     </div>
   );
-}
+};
+
+export default DomainPaymentForm;
 

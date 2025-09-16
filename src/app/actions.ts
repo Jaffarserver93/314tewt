@@ -1,3 +1,4 @@
+
 'use server';
 
 import { z } from 'zod';
@@ -122,7 +123,14 @@ const createOrderSchema = z.object({
 
 export async function createOrderAction(values: z.infer<typeof createOrderSchema>) {
     try {
-        const prefix = values.type === 'hosting' ? 'mc' : 'vps';
+        let prefix = 'ord';
+        if (values.type === 'hosting') {
+          prefix = 'mc';
+        } else if (values.type === 'vps') {
+          prefix = 'vps';
+        } else if (values.type === 'domain') {
+          prefix = 'dom';
+        }
         const orderId = `${prefix}-${Math.random().toString(36).substring(2, 10)}`;
 
         const { data: newOrder, error } = await supabase
@@ -146,3 +154,4 @@ export async function createOrderAction(values: z.infer<typeof createOrderSchema
         return { success: false, message: error.message || "Failed to create order." };
     }
 }
+
