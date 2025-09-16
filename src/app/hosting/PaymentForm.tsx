@@ -34,8 +34,8 @@ export default function PaymentForm({ selectedPlan, onBack }: PaymentFormProps) 
                         <ul className="text-sm text-muted-foreground mt-2 space-y-1">
                             <li>{selectedPlan.ram} RAM</li>
                             <li>{selectedPlan.storage} Storage</li>
-                            <li>{selectedPlan.cpu} vCPU</li>
-                            <li>{selectedPlan.players} Players</li>
+                            <li>{selectedPlan.cpu}</li>
+                            <li>{selectedPlan.slots}</li>
                         </ul>
                     </div>
                     <div>

@@ -3,7 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Cpu, MemoryStick, HardDrive, IndianRupee, Users, Shield, Server, Sparkles, Database, History, Share2, Zap, Crown, PlusCircle } from 'lucide-react';
+import { Cpu, MemoryStick, HardDrive, IndianRupee, Users, Shield, Server, Sparkles, Database, History, Share2, Zap, Crown, PlusCircle } from 'lucide-react';
 import React from 'react';
 import { cn } from '@/lib/utils';
 import type { Plan, PlansData } from '@/lib/types';
@@ -16,23 +16,23 @@ interface PlanTabsProps {
 }
 
 const categoryIcons: { [key: string]: React.ReactNode } = {
-  basic: <Shield className="w-8 h-8" />,
-  recommended: <Zap className="w-8 h-8" />,
-  enterprise: <Crown className="w-8 h-8" />,
+  budget: <Shield className="w-8 h-8" />,
+  powered: <Zap className="w-8 h-8" />,
+  premium: <Crown className="w-8 h-8" />,
 };
 
 const categoryStyles: { [key: string]: { bg: string; text: string; shadow: string; } } = {
-  basic: {
+  budget: {
     bg: 'bg-green-500/10',
     text: 'text-green-400',
     shadow: 'shadow-green-500/30'
   },
-  recommended: {
+  powered: {
     bg: 'bg-yellow-500/10',
     text: 'text-yellow-400',
     shadow: 'shadow-yellow-500/30'
   },
-  enterprise: {
+  premium: {
     bg: 'bg-gradient-to-r from-purple-500/10 to-pink-500/10',
     text: 'text-purple-400',
     shadow: 'shadow-purple-500/30'
@@ -55,7 +55,7 @@ const PlanCard: React.FC<{ plan: Plan; category: string; onPlanSelect?: (plan: a
   };
   
   return (
-  <Card className={cn("glassmorphism p-8 rounded-2xl group transition-all duration-500 transform-gpu hover:scale-105 active:scale-[1.02] relative overflow-hidden flex flex-col", plan.popular ? 'border-2 border-primary/80' : 'border-border')}>
+  <Card className={cn("glassmorphism p-8 rounded-2xl group transition-all duration-500 transform-gpu hover:scale-105 active:scale-[1.02] relative overflow-hidden flex flex-col", plan.is_popular ? 'border-2 border-primary/80' : 'border-border')}>
     <div className="flex-grow">
       <div className="text-center mb-6">
           <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center mx-auto shadow-lg animate-pulse", categoryStyles[category].bg, categoryStyles[category].text, categoryStyles[category].shadow)}>
@@ -64,7 +64,7 @@ const PlanCard: React.FC<{ plan: Plan; category: string; onPlanSelect?: (plan: a
            <h3 className="text-3xl font-bold text-foreground mt-4 mb-2 text-center">{plan.name}</h3>
       </div>
 
-      {plan.popular && (
+      {plan.is_popular && (
         <div className="mb-4 flex justify-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-yellow-400/90 text-black px-4 py-1.5 text-sm font-semibold shadow-md">
             <Sparkles className="w-4 h-4" />
@@ -80,25 +80,14 @@ const PlanCard: React.FC<{ plan: Plan; category: string; onPlanSelect?: (plan: a
       </div>
       
       <ul className="space-y-4 mb-8 dark:text-muted-foreground">
-          <li className="flex items-center"><MemoryStick className="w-5 h-5 mr-3 text-emerald-400" /><span>{plan.ram} DDR4 RAM</span></li>
-          <li className="flex items-center"><Cpu className="w-5 h-5 mr-3 text-emerald-400" /><span>{plan.cpu} vCPU</span></li>
-          <li className="flex items-center"><Users className="w-5 h-5 mr-3 text-emerald-400" /><span>{plan.players} Players</span></li>
+          <li className="flex items-center"><MemoryStick className="w-5 h-5 mr-3 text-emerald-400" /><span>{plan.ram}</span></li>
+          <li className="flex items-center"><Cpu className="w-5 h-5 mr-3 text-emerald-400" /><span>{plan.cpu}</span></li>
+          <li className="flex items-center"><Users className="w-5 h-5 mr-3 text-emerald-400" /><span>{plan.slots}</span></li>
           <li className="flex items-center"><HardDrive className="w-5 h-5 mr-3 text-emerald-400" /><span>{plan.storage} Storage</span></li>
-          <li className="flex items-center"><Database className="w-5 h-5 mr-3 text-emerald-400" /><span>{plan.databases} Databases</span></li>
-          <li className="flex items-center"><History className="w-5 h-5 mr-3 text-emerald-400" /><span>{plan.backups} Backups</span></li>
-          <li className="flex items-center"><Share2 className="w-5 h-5 mr-3 text-emerald-400" /><span>{plan.ports} Ports</span></li>
           <li className="flex items-center"><Shield className="w-5 h-5 mr-3 text-emerald-400" /><span>DDoS Protection</span></li>
           <li className="flex items-center"><Server className="w-5 h-5 mr-3 text-emerald-400" /><span>Indian Servers</span></li>
       </ul>
 
-      <div className="mb-8 p-4 rounded-lg glassmorphism border border-primary/20">
-          <h4 className="font-bold text-foreground mb-3 flex items-center"><PlusCircle className="w-5 h-5 mr-2 text-primary"/>Add-ons Available:</h4>
-          <div className="space-y-2 text-sm text-muted-foreground">
-              <p><span className="font-semibold text-foreground/90">Extra Unit:</span> ₹{plan.addons?.unit || '30'}/unit</p>
-              <p className="text-xs pl-4">(1 GB RAM + 50% CPU + 5 GB SSD)</p>
-              <p><span className="font-semibold text-foreground/90">Backup Slot:</span> ₹{plan.addons?.backup || '25'}/slot</p>
-          </div>
-      </div>
     </div>
 
     <Button onClick={handleSelect} size="lg" className="w-full mt-auto bg-gradient-to-r from-slate-800 to-emerald-900 hover:from-slate-700 hover:to-emerald-800 text-white rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 active:scale-95">
@@ -120,19 +109,19 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ plans, onPlanSelect }) => {
         </p>
       </div>
 
-      <Tabs defaultValue="recommended" className="w-full">
+      <Tabs defaultValue="powered" className="w-full">
         <div className="flex justify-center mb-10">
           <div className="p-2 rounded-2xl glassmorphism">
             <TabsList className="p-0 rounded-xl h-auto flex flex-col md:flex-row gap-2 bg-transparent">
-              <TabsTrigger value="basic" className="w-full md:w-auto text-base gap-2 px-6 py-3 rounded-xl justify-center data-[state=active]:text-primary-foreground data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-800 data-[state=active]:to-emerald-900 data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/20 data-[state=inactive]:glassmorphism data-[state=inactive]:text-muted-foreground">
+              <TabsTrigger value="budget" className="w-full md:w-auto text-base gap-2 px-6 py-3 rounded-xl justify-center data-[state=active]:text-primary-foreground data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-800 data-[state=active]:to-emerald-900 data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/20 data-[state=inactive]:glassmorphism data-[state=inactive]:text-muted-foreground">
                 <Shield className="w-5 h-5" />
                 Budget Plans
               </TabsTrigger>
-              <TabsTrigger value="recommended" className="w-full md:w-auto text-base gap-2 px-6 py-3 rounded-xl justify-center data-[state=active]:text-primary-foreground data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-800 data-[state=active]:to-emerald-900 data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/20 data-[state=inactive]:glassmorphism data-[state=inactive]:text-muted-foreground">
+              <TabsTrigger value="powered" className="w-full md:w-auto text-base gap-2 px-6 py-3 rounded-xl justify-center data-[state=active]:text-primary-foreground data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-800 data-[state=active]:to-emerald-900 data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/20 data-[state=inactive]:glassmorphism data-[state=inactive]:text-muted-foreground">
                 <Zap className="w-5 h-5" />
                 Powered Plans
               </TabsTrigger>
-              <TabsTrigger value="enterprise" className="w-full md:w-auto text-base gap-2 px-6 py-3 rounded-xl justify-center data-[state=active]:text-primary-foreground data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-800 data-[state=active]:to-emerald-900 data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/20 data-[state=inactive]:glassmorphism data-[state=inactive]:text-muted-foreground">
+              <TabsTrigger value="premium" className="w-full md:w-auto text-base gap-2 px-6 py-3 rounded-xl justify-center data-[state=active]:text-primary-foreground data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-800 data-[state=active]:to-emerald-900 data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/20 data-[state=inactive]:glassmorphism data-[state=inactive]:text-muted-foreground">
                 <Crown className="w-5 h-5" />
                 Premium Plans
               </TabsTrigger>
@@ -140,10 +129,10 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ plans, onPlanSelect }) => {
           </div>
         </div>
         
-        <TabsContent value="basic">
-          {plans.basic.length > 0 ? (
+        <TabsContent value="budget">
+          {plans.budget.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {plans.basic.map(p => <PlanCard key={p.name} plan={p} category="basic" onPlanSelect={onPlanSelect} />)}
+                {plans.budget.map(p => <PlanCard key={p.name} plan={p} category="budget" onPlanSelect={onPlanSelect} />)}
             </div>
           ) : (
             <div className="text-center text-muted-foreground py-16">
@@ -151,10 +140,10 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ plans, onPlanSelect }) => {
             </div>
           )}
         </TabsContent>
-        <TabsContent value="recommended">
-          {plans.recommended.length > 0 ? (
+        <TabsContent value="powered">
+          {plans.powered.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {plans.recommended.map(p => <PlanCard key={p.name} plan={p} category="recommended" onPlanSelect={onPlanSelect} />)}
+                {plans.powered.map(p => <PlanCard key={p.name} plan={p} category="powered" onPlanSelect={onPlanSelect} />)}
             </div>
           ) : (
             <div className="text-center text-muted-foreground py-16">
@@ -162,10 +151,10 @@ const PlanTabs: React.FC<PlanTabsProps> = ({ plans, onPlanSelect }) => {
             </div>
           )}
         </TabsContent>
-        <TabsContent value="enterprise">
-          {plans.enterprise.length > 0 ? (
+        <TabsContent value="premium">
+          {plans.premium.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {plans.enterprise.map(p => <PlanCard key={p.name} plan={p} category="enterprise" onPlanSelect={onPlanSelect} />)}
+                {plans.premium.map(p => <PlanCard key={p.name} plan={p} category="premium" onPlanSelect={onPlanSelect} />)}
             </div>
           ) : (
             <div className="text-center text-muted-foreground py-16">

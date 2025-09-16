@@ -78,15 +78,15 @@ async function getMinecraftPlans() {
 
   if (error) {
     console.error('Failed to fetch minecraft plans:', error);
-    return { basic: [], recommended: [], enterprise: [] };
+    return { budget: [], powered: [], premium: [] };
   }
 
   const plans = data as Plan[];
 
   return {
-    basic: plans.filter(p => p.category === 'basic'),
-    recommended: plans.filter(p => p.category === 'recommended'),
-    enterprise: plans.filter(p => p.category === 'enterprise'),
+    budget: plans.filter(p => p.category === 'budget'),
+    powered: plans.filter(p => p.category === 'powered'),
+    premium: plans.filter(p => p.category === 'premium'),
   };
 }
 
