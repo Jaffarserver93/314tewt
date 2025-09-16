@@ -37,7 +37,7 @@ export function Header() {
   const loading = status === 'loading';
   const isAuthenticated = status === 'authenticated';
 
-  const canAccessAdminPanel = user?.role && user.role !== 'user';
+  const canAccessAdminPanel = user?.role && ['super admin', 'admin', 'manager'].includes(user.role);
 
   useEffect(() => {
     const handleScroll = () => {
