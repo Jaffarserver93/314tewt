@@ -19,9 +19,38 @@ async function getTotalUsers() {
     return count || 0;
 }
 
+async function getTotalOrders() {
+    const { count, error } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true });
+
+    if (error) {
+        console.error('Error fetching total orders:', error);
+        return 0;
+    }
+
+    return count || 0;
+}
+
+async function getPendingOrders() {
+    const { count, error } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+
+    if (error) {
+        console.error('Error fetching pending orders:', error);
+        return 0;
+    }
+
+    return count || 0;
+}
+
 
 export default async function AdminDashboard() {
   const totalUsers = await getTotalUsers();
+  const totalOrders = await getTotalOrders();
+  const pendingOrders = await getPendingOrders();
 
   return (
     <div className="flex flex-col gap-8">
@@ -59,7 +88,7 @@ export default async function AdminDashboard() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,250</div>
+            <div className="text-2xl font-bold">{totalOrders}</div>
             <p className="text-xs text-muted-foreground">+50 since yesterday</p>
           </CardContent>
         </Card>
@@ -70,7 +99,7 @@ export default async function AdminDashboard() {
             <Hourglass className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">15</div>
+            <div className="text-2xl font-bold">{pendingOrders}</div>
             <p className="text-xs text-muted-foreground">Awaiting confirmation</p>
           </CardContent>
         </Card>
