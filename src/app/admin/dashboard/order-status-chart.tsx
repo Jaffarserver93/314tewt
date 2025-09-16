@@ -19,12 +19,6 @@ import {
   ChartLegendContent
 } from "@/components/ui/chart"
 
-const chartData = [
-  { status: "Confirmed", value: 275, fill: "var(--color-confirmed)" },
-  { status: "Pending", value: 200, fill: "var(--color-pending)" },
-  { status: "Cancelled", value: 100, fill: "var(--color-cancelled)" },
-]
-
 const chartConfig = {
   value: {
     label: "Orders",
@@ -43,9 +37,20 @@ const chartConfig = {
   },
 }
 
-export default function OrderStatusChart() {
-  const [activeStatus, setActiveStatus] =
-    React.useState<keyof typeof chartConfig>("confirmed")
+interface OrderStatusChartProps {
+    data: {
+        confirmed: number;
+        pending: number;
+        cancelled: number;
+    }
+}
+
+export default function OrderStatusChart({ data }: OrderStatusChartProps) {
+  const chartData = [
+    { status: "Confirmed", value: data.confirmed, fill: "var(--color-confirmed)" },
+    { status: "Pending", value: data.pending, fill: "var(--color-pending)" },
+    { status: "Cancelled", value: data.cancelled, fill: "var(--color-cancelled)" },
+  ]
 
   return (
     <Card className="glassmorphism flex flex-col">

@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import RevenueChart from './revenue-chart';
 import OrderStatusChart from "./order-status-chart";
 import RecentOrders from "./recent-orders";
+import type { Order } from "@/lib/database";
 
 async function getTotalUsers() {
     const { count, error } = await supabase
@@ -46,11 +47,46 @@ async function getPendingOrders() {
     return count || 0;
 }
 
+async function getOrderStats() {
+    const { data, error } = await supabase
+        .from('orders')
+        .select('status');
+
+    if (error) {
+        console.error('Error fetching order stats:', error);
+        return { confirmed: 0, pending: 0, cancelled: 0 };
+    }
+
+    return data.reduce((acc, order) => {
+        if (order.status) {
+            acc[order.status as keyof typeof acc]++;
+        }
+        return acc;
+    }, { confirmed: 0, pending: 0, cancelled: 0 });
+}
+
+async function getRecentOrders(): Promise<Order[]> {
+    const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+    if (error) {
+        console.error('Error fetching recent orders:', error);
+        return [];
+    }
+
+    return data as Order[];
+}
+
 
 export default async function AdminDashboard() {
   const totalUsers = await getTotalUsers();
   const totalOrders = await getTotalOrders();
   const pendingOrders = await getPendingOrders();
+  const orderStats = await getOrderStats();
+  const recentOrders = await getRecentOrders();
 
   return (
     <div className="flex flex-col gap-8">
@@ -106,9 +142,9 @@ export default async function AdminDashboard() {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RevenueChart />
-        <OrderStatusChart />
+        <OrderStatusChart data={orderStats} />
       </div>
-      <RecentOrders />
+      <RecentOrders orders={recentOrders} />
     </div>
   );
 }

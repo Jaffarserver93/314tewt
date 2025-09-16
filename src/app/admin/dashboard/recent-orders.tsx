@@ -18,65 +18,18 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { FileDown } from "lucide-react"
 import { cn } from "@/lib/utils"
+import type { Order } from "@/lib/database";
+import { format } from "date-fns";
 
-const demoOrders = [
-    {
-    customer: {
-      name: "Liam Johnson",
-      email: "liam@example.com",
-    },
-    type: "Minecraft",
-    status: "Confirmed",
-    date: "2025-09-15",
-    amount: "₹260/mo",
-  },
-  {
-    customer: {
-      name: "Olivia Smith",
-      email: "olivia@example.com",
-    },
-    type: "Vps",
-    status: "Pending",
-    date: "2025-09-14",
-    amount: "₹520/mo",
-  },
-    {
-    customer: {
-      name: "Noah Williams",
-      email: "noah@example.com",
-    },
-    type: "Domain",
-    status: "Cancelled",
-    date: "2025-09-13",
-    amount: "₹199/year",
-  },
-  {
-    customer: {
-      name: "Emma Brown",
-      email: "emma@example.com",
-    },
-    type: "Minecraft",
-    status: "Confirmed",
-    date: "2025-09-12",
-    amount: "₹260/mo",
-  },
-  {
-    customer: {
-      name: "James Jones",
-      email: "james@example.com",
-    },
-    type: "Vps",
-    status: "Pending",
-    date: "2025-09-11",
-    amount: "₹520/mo",
-  },
-]
+interface RecentOrdersProps {
+    orders: Order[];
+}
 
-export default function RecentOrders() {
+export default function RecentOrders({ orders }: RecentOrdersProps) {
     const statusColors: { [key: string]: string } = {
-        Pending: 'border-yellow-500/30 bg-yellow-500/20 text-yellow-400',
-        Confirmed: 'border-green-500/30 bg-green-500/20 text-green-400',
-        Cancelled: 'border-red-500/30 bg-red-500/20 text-red-400',
+        pending: 'border-yellow-500/30 bg-yellow-500/20 text-yellow-400',
+        confirmed: 'border-green-500/30 bg-green-500/20 text-green-400',
+        cancelled: 'border-red-500/30 bg-red-500/20 text-red-400',
     };
 
   return (
@@ -103,22 +56,28 @@ export default function RecentOrders() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {demoOrders.map((order, index) => (
-              <TableRow key={index}>
+            {orders.length > 0 ? orders.map((order) => (
+              <TableRow key={order.id}>
                 <TableCell>
-                  <div className="font-medium">{order.customer.name}</div>
+                  <div className="font-medium">{order.customer_info.firstName} {order.customer_info.lastName}</div>
                   <div className="text-sm text-muted-foreground">
-                    {order.customer.email}
+                    {order.customer_info.email}
                   </div>
                 </TableCell>
-                <TableCell>{order.type}</TableCell>
+                <TableCell className="capitalize">{order.type}</TableCell>
                 <TableCell>
                   <Badge className={cn("text-xs capitalize", statusColors[order.status])} variant="outline">{order.status}</Badge>
                 </TableCell>
-                <TableCell>{order.date}</TableCell>
-                <TableCell className="text-right">{order.amount}</TableCell>
+                <TableCell>{format(new Date(order.created_at), "yyyy-MM-dd")}</TableCell>
+                <TableCell className="text-right">{order.price}</TableCell>
               </TableRow>
-            ))}
+            )) : (
+               <TableRow>
+                 <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                    No recent orders found.
+                 </TableCell>
+                </TableRow>
+            )}
           </TableBody>
         </Table>
       </CardContent>
