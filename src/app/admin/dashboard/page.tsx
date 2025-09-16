@@ -67,6 +67,38 @@ async function getTotalRevenue() {
     return totalRevenue;
 }
 
+async function getMonthlyRevenue() {
+    const { data, error } = await supabase
+        .from('orders')
+        .select('created_at, price, status')
+        .eq('status', 'confirmed');
+
+    if (error) {
+        console.error('Error fetching monthly revenue:', error);
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        return monthNames.map(name => ({ name, total: 0 }));
+    }
+
+    const monthlyRevenue = data.reduce((acc, order) => {
+        const date = new Date(order.created_at);
+        const month = date.getMonth(); // 0-11
+        const priceString = order.price || '0';
+        const numericPrice = parseFloat(priceString.replace(/[^0-9.]/g, ''));
+        if (!isNaN(numericPrice)) {
+            acc[month] = (acc[month] || 0) + numericPrice;
+        }
+        return acc;
+    }, new Array(12).fill(0));
+
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    return monthNames.map((name, index) => ({
+        name,
+        total: monthlyRevenue[index] || 0
+    }));
+}
+
+
 async function getOrderStats() {
     const { data, error } = await supabase
         .from('orders')
@@ -108,6 +140,7 @@ export default async function AdminDashboard() {
   const totalRevenue = await getTotalRevenue();
   const orderStats = await getOrderStats();
   const recentOrders = await getRecentOrders();
+  const monthlyRevenue = await getMonthlyRevenue();
 
   return (
     <div className="flex flex-col gap-8">
@@ -162,7 +195,7 @@ export default async function AdminDashboard() {
         </Card>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RevenueChart />
+        <RevenueChart data={monthlyRevenue} />
         <OrderStatusChart data={orderStats} />
       </div>
       <RecentOrders orders={recentOrders} />
