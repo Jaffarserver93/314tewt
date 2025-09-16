@@ -1,5 +1,7 @@
+
 import NextAuth from 'next-auth';
 import DiscordProvider from 'next-auth/providers/discord';
+import { supabase } from '@/lib/supabase';
 
 export default NextAuth({
   providers: [
@@ -47,11 +49,14 @@ export default NextAuth({
     },
     async redirect({ url, baseUrl }) {
       // After a successful sign-in, redirect to the save-data page.
-      if (url.startsWith(baseUrl)) {
+      if (url === baseUrl) {
         return `${baseUrl}/save-data`;
       }
-      // Allows redirecting to external URLs
-      return url;
+      // Allows redirecting to external URLs, including the signout redirect.
+       if (url.startsWith(baseUrl)) {
+        return url;
+      }
+      return baseUrl;
     },
     async jwt({ token, account, profile }) {
       if (account && profile) {
@@ -69,7 +74,21 @@ export default NextAuth({
           };
       }
       if (token.id) {
-        (session.user as any).id = token.id;
+        const userId = token.id as string;
+        (session.user as any).id = userId;
+
+        // Fetch user from Supabase to get the role
+        const { data: userData, error } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', userId)
+          .single();
+
+        if (error) {
+          console.error('Error fetching user role from Supabase:', error);
+        } else if (userData) {
+          (session.user as any).role = userData.role;
+        }
       }
       return session;
     },

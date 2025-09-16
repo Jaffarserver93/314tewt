@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -37,7 +38,8 @@ export function Header() {
   const loading = status === 'loading';
   const isAuthenticated = status === 'authenticated';
 
-  const canAccessAdminPanel = user?.role && ['super admin', 'admin', 'manager'].includes(user.role);
+  const allowedAdminRoles = ['super admin', 'admin', 'manager'];
+  const canAccessAdminPanel = user?.role && allowedAdminRoles.includes(user.role);
 
   useEffect(() => {
     const handleScroll = () => {
