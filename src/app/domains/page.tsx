@@ -1,23 +1,35 @@
 
-import fs from 'fs/promises';
-import path from 'path';
-import type { TLDsData, FeaturesData } from '@/lib/types';
+import { supabase } from '@/lib/supabase';
+import type { TLD, DomainFeature } from '@/lib/types';
 import DomainsClientPage from './domains-client-page';
 
-async function getData(): Promise<{ tlds: TLDsData['tlds'], features: FeaturesData['features'] }> {
-    const filePath = path.join(process.cwd(), 'src', 'lib', 'domains-data.json');
-    try {
-        const fileContent = await fs.readFile(filePath, 'utf-8');
-        const data = JSON.parse(fileContent);
-        return {
-            tlds: data.tlds || [],
-            features: data.features || []
-        };
-    } catch (error) {
-        console.error("Failed to read domains data:", error);
-        return { tlds: [], features: [] };
+async function getData(): Promise<{ tlds: TLD[], features: DomainFeature[] }> {
+    const tldsPromise = supabase
+        .from('tlds')
+        .select('tld, price, originalPrice:original_price');
+        
+    const featuresPromise = supabase
+        .from('domain_features')
+        .select('icon, title, description');
+
+    const [{ data: tlds, error: tldsError }, { data: features, error: featuresError }] = await Promise.all([
+        tldsPromise,
+        featuresPromise
+    ]);
+
+    if (tldsError) {
+        console.error("Failed to read TLDs data from Supabase:", tldsError);
     }
+    if (featuresError) {
+        console.error("Failed to read features data from Supabase:", featuresError);
+    }
+
+    return {
+        tlds: (tlds as TLD[]) || [],
+        features: (features as DomainFeature[]) || []
+    };
 }
+
 
 export default async function DomainsPage() {
     const { tlds, features } = await getData();
