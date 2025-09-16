@@ -9,12 +9,15 @@ import type { MinecraftPlan } from '@/lib/types';
 const planSchema = z.object({
   name: z.string().min(2, "Plan name is required."),
   category: z.enum(['budget', 'powered', 'premium']),
-  price: z.number().positive(),
+  price: z.preprocess(
+    (a) => (a === '' || a === undefined ? undefined : parseInt(String(a), 10)),
+    z.number({ required_error: 'Price is required.' }).positive("Price must be positive.")
+  ),
   ram: z.string().min(1, "RAM is required."),
   storage: z.string().min(1, "Storage is required."),
   cpu: z.string().min(1, "CPU is required."),
   slots: z.string().min(1, "Slots are required."),
-  is_popular: z.boolean(),
+  is_popular: z.boolean().default(false),
 });
 
 const planUpdateSchema = planSchema.extend({
@@ -55,11 +58,11 @@ export async function addPlanAction(values: z.infer<typeof planSchema>) {
 
 export async function updatePlanAction(values: z.infer<typeof planUpdateSchema>) {
     try {
-        const parsedValues = planUpdateSchema.parse(values);
+        const { id, ...updateData } = planUpdateSchema.parse(values);
         const { error } = await supabase
             .from('minecraft_plans')
-            .update({ ...parsedValues })
-            .eq('id', parsedValues.id);
+            .update(updateData)
+            .eq('id', id);
 
         if (error) throw error;
 
