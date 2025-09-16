@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Users, Hourglass, Server, IndianRupee, ShoppingCart } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import RevenueChart from './revenue-chart';
+import OrderStatusChart from "./order-status-chart";
 
 async function getTotalUsers() {
     const { count, error } = await supabase
@@ -73,8 +74,10 @@ export default async function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
-
-      <RevenueChart />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <RevenueChart />
+        <OrderStatusChart />
+      </div>
 
     </div>
   );
