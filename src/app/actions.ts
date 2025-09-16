@@ -122,9 +122,13 @@ const createOrderSchema = z.object({
 
 export async function createOrderAction(values: z.infer<typeof createOrderSchema>) {
     try {
+        // Manually generate a prefixed ID
+        const orderId = `vps-${Math.random().toString(36).substring(2, 10)}`;
+
         const { data: newOrder, error } = await supabase
             .from('orders')
             .insert({
+                id: orderId,
                 user_id: values.userId,
                 plan_name: values.planName,
                 type: values.type,
