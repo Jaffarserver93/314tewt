@@ -2,6 +2,7 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Users, Hourglass, Server, IndianRupee, ShoppingCart } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import RevenueChart from './revenue-chart';
 
 async function getTotalUsers() {
     const { count, error } = await supabase
@@ -27,7 +28,7 @@ export default async function AdminDashboard() {
         <p className="text-muted-foreground">Welcome back, Admin! Here's an overview of your platform.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="glassmorphism hover:border-primary/50 transition-colors">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -72,6 +73,8 @@ export default async function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <RevenueChart />
 
     </div>
   );
