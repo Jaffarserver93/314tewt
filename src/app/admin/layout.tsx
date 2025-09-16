@@ -1,9 +1,10 @@
+
 "use client";
 
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { ShieldAlert, Users, LayoutDashboard, Menu, Search, Settings, Home, ArrowLeft, Gamepad2, Server, User, ShoppingCart, Globe, LifeBuoy } from "lucide-react";
+import { ShieldAlert, Users, LayoutDashboard, Menu, Search, Settings, Home, ArrowLeft, Gamepad2, Server, User, ShoppingCart, Globe, LifeBuoy, TicketPercent } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     { href: "/admin/support", label: "Support", icon: LifeBuoy, roles: ['super admin', 'admin', 'manager', 'staff'] },
     { href: "/profile", label: "Profile", icon: User, roles: ['super admin', 'admin', 'manager', 'staff'] },
     { href: "/admin/domains", label: "Domains", icon: Globe, roles: ['super admin', 'admin', 'manager'] },
+    { href: "/admin/coupons", label: "Coupons", icon: TicketPercent, roles: ['super admin', 'admin', 'manager'] },
     { href: "/admin/minecraft", label: "Minecraft", icon: Gamepad2, roles: ['super admin', 'admin', 'manager'] },
     { href: "/admin/vps", label: "VPS", icon: Server, roles: ['super admin', 'admin', 'manager'] },
     { href: "/admin/settings", label: "Settings", icon: Settings, roles: ['super admin', 'admin'] },
