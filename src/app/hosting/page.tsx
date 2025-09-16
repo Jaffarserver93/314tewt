@@ -138,7 +138,7 @@ export default async function HostingPage() {
         </section>
 
         {/* This empty section is the anchor for scrolling */}
-        <div id="pricing"></div>
+        <div id="hosting-plans"></div>
     </div>
   );
 
