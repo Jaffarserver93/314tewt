@@ -92,8 +92,8 @@ const testimonials = [
 export default function Home() {
   const { data: session } = useSession();
   
-  const scrollToServices = () => {
-    document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -121,7 +121,7 @@ export default function Home() {
             
           <div className="flex justify-center items-center px-4">
             <Button 
-              onClick={scrollToServices}
+              onClick={() => scrollTo('services')}
               size="lg" 
               className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-lg shadow-purple-500/30 text-secondary-foreground px-6 sm:px-10 py-4 sm:py-5 rounded-2xl font-bold text-sm sm:text-lg transition-all duration-300 transform hover:scale-105 group">
                 <Flame className="w-4 h-4 sm:w-5 sm:h-5 mr-2 group-hover:animate-pulse" />
@@ -131,7 +131,7 @@ export default function Home() {
           </div>
             
           {!session && (
-            <div className="mt-8 glassmorphism p-4 rounded-xl border max-w-md mx-auto">
+            <div id="login-section" className="mt-8 glassmorphism p-4 rounded-xl border max-w-md mx-auto">
                 <p className="text-center text-muted-foreground text-sm mb-3">
                   🔐 Login with Discord to place orders and access all features
                 </p>
@@ -163,12 +163,19 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <Button asChild size="lg" className={`w-full sm:w-auto ${service.buttonClass} text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 group text-sm sm:text-base`}>
-                  <Link href={service.buttonLink}>
-                    {service.buttonText}
-                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </Button>
+                {session ? (
+                   <Button asChild size="lg" className={`w-full sm:w-auto ${service.buttonClass} text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 group text-sm sm:text-base`}>
+                      <Link href={service.buttonLink}>
+                        {service.buttonText}
+                        <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                      </Link>
+                    </Button>
+                ) : (
+                   <Button size="lg" onClick={() => scrollTo('login-section')} className={`w-full sm:w-auto ${service.buttonClass} text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 group text-sm sm:text-base`}>
+                      {service.buttonText}
+                      <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                )}
               </div>
             </Card>
           ))}
