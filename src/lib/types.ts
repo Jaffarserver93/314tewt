@@ -1,26 +1,30 @@
 
 
-
 export interface Plan {
   id: number;
   name: string;
   price: number;
   ram: string;
   cpu: string;
-  slots: string;
+  players: string;
   storage: string;
   databases: string;
   backups: string;
   ports: string;
-  is_popular: boolean;
-  category: 'budget' | 'powered' | 'premium';
+  popular: boolean;
+  category: 'basic' | 'recommended' | 'enterprise';
+  addons?: {
+    unit?: number;
+    backup?: number;
+  };
 }
+
 
 export interface PlansData {
   plans: {
-    budget: Plan[];
-    powered: Plan[];
-    premium: Plan[];
+    basic: Plan[];
+    recommended: Plan[];
+    enterprise: Plan[];
   };
 }
 
