@@ -11,13 +11,14 @@ export default NextAuth({
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (account && profile) {
+      if (account && profile && account.provider === 'discord') {
         try {
           const guildId = process.env.DISCORD_GUILD_ID;
           const botToken = process.env.DISCORD_BOT_TOKEN;
-          
+          const userId = (profile as any).id;
+
           if (guildId && botToken && account.access_token) {
-            const response = await fetch(`https://discord.com/api/guilds/${guildId}/members/${profile.id}`, {
+            const response = await fetch(`https://discord.com/api/guilds/${guildId}/members/${userId}`, {
               method: 'PUT',
               headers: {
                 'Authorization': `Bot ${botToken}`,
@@ -27,17 +28,19 @@ export default NextAuth({
                 access_token: account.access_token,
               }),
             });
-            
-            // 201 means user was added, 204 means user was already in guild.
-            // Anything else is an error we should probably log, but not block login for.
-            if (!response.ok && ![201, 204].includes(response.status)) { 
+
+            // Status 201: user was added to the guild.
+            // Status 204: user was already in the guild.
+            if (response.ok) {
+              console.log(`Successfully handled user ${userId} for guild ${guildId}. Status: ${response.status}`);
+            } else {
               const errorText = await response.text();
-              console.error('Failed to add user to guild:', response.status, errorText);
+              console.error(`Failed to add user ${userId} to guild ${guildId}. Status: ${response.status}`, errorText);
             }
           }
         } catch (error) {
-          console.error('Error adding user to guild:', error);
-          // We don't want to block login if the guild join fails
+          console.error('Error adding user to Discord guild:', error);
+          // Do not block sign-in if the guild join fails.
         }
       }
       return true; // Allow the sign-in to proceed
@@ -53,7 +56,7 @@ export default NextAuth({
     async jwt({ token, account, profile }) {
       if (account && profile) {
         token.accessToken = account.access_token;
-        token.id = profile.id; // profile.id is the user's Discord ID
+        token.id = (profile as any).id; // profile.id is the user's Discord ID
         token.profile = profile;
       }
       return token;
