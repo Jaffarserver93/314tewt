@@ -8,11 +8,7 @@ import VPSPlanTabs from './VPSPlanTabs';
 import { Card } from '@/components/ui/card';
 
 interface VpsClientPageProps {
-  initialPlans: {
-    standard: VpsPlan[];
-    performance: VpsPlan[];
-    enterprise: VpsPlan[];
-  };
+  initialPlans: VpsPlan[];
   staticContent: React.ReactNode;
   children: React.ReactNode;
 }
@@ -55,5 +51,3 @@ export default function VpsClientPage({ initialPlans, staticContent, children }:
     </>
   );
 }
-
-    

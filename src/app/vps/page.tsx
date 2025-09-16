@@ -1,6 +1,5 @@
 
 import React from 'react';
-import Link from 'next/link';
 import { ArrowLeft, Zap, Shield, Users, CheckCircle, Cpu, Server, HardDrive } from 'lucide-react';
 import VPSHero from './VPSHero';
 import VpsClientPage from './vps-client-page';
@@ -9,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { VpsPlan } from '@/lib/types';
 import BackButton from '@/app/hosting/back-button';
+import { supabase } from '@/lib/supabase';
 
 
 const features = [
@@ -68,28 +68,24 @@ const features = [
   }
 ];
 
-const demoPlans = {
-  standard: [
-    { id: 1, name: 'VPS-S1', category: 'standard', price: 270, vcpu: '1 vCPU', ram: '2GB', storage: '40GB NVMe', bandwidth: '1TB', is_popular: false, country: 'India', cpu: 'Intel Xeon' },
-    { id: 2, name: 'VPS-S2', category: 'standard', price: 499, vcpu: '2 vCPU', ram: '4GB', storage: '80GB NVMe', bandwidth: '2TB', is_popular: true, country: 'India', cpu: 'Intel Xeon' },
-    { id: 3, name: 'VPS-S3', category: 'standard', price: 899, vcpu: '4 vCPU', ram: '8GB', storage: '160GB NVMe', bandwidth: '4TB', is_popular: false, country: 'Germany', cpu: 'Intel Xeon' },
-  ],
-  performance: [
-    { id: 4, name: 'VPS-P1', category: 'performance', price: 1699, vcpu: '6 vCPU', ram: '16GB', storage: '320GB NVMe', bandwidth: '6TB', is_popular: true, country: 'India', cpu: 'AMD Ryzen 7 7700' },
-    { id: 5, name: 'VPS-P2', category: 'performance', price: 2499, vcpu: '8 vCPU', ram: '24GB', storage: '480GB NVMe', bandwidth: '8TB', is_popular: false, country: 'Germany', cpu: 'AMD Ryzen 7 7700' },
-    { id: 6, name: 'VPS-P3', category: 'performance', price: 3299, vcpu: '8 vCPU', ram: '32GB', storage: '640GB NVMe', bandwidth: '10TB', is_popular: false, country: 'India', cpu: 'AMD Ryzen 7 7700' },
-  ],
-  enterprise: [
-    { id: 7, name: 'VPS-E1', category: 'enterprise', price: 4899, vcpu: '12 vCPU', ram: '48GB', storage: '960GB NVMe', bandwidth: '12TB', is_popular: false, country: 'Germany', cpu: 'AMD Ryzen 7 7700' },
-    { id: 8, name: 'VPS-E2', category: 'enterprise', price: 6499, vcpu: '16 vCPU', ram: '64GB', storage: '1.2TB NVMe', bandwidth: '15TB', is_popular: true, country: 'India', cpu: 'AMD Ryzen 7 7700' },
-    { id: 9, name: 'VPS-E3', category: 'enterprise', price: 9699, vcpu: '24 vCPU', ram: '96GB', storage: '1.9TB NVMe', bandwidth: '20TB', is_popular: false, country: 'Germany', cpu: 'AMD Ryzen 7 7700' },
-  ],
-};
+
+async function getVpsPlans(): Promise<VpsPlan[]> {
+    const { data, error } = await supabase
+        .from('vps_plans')
+        .select('*')
+        .order('price');
+        
+    if (error) {
+        console.error("Failed to read VPS plans data from Supabase:", error);
+        return [];
+    }
+
+    return (data || []) as VpsPlan[];
+}
 
 
 export default async function VpsPage() {
-  // In a real app, you would fetch this from a database.
-  const initialPlans = demoPlans;
+  const initialPlans = await getVpsPlans();
 
   const staticContent = (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-blue-900/20 text-foreground font-sans">

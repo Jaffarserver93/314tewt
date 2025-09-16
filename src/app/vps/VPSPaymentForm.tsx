@@ -54,5 +54,3 @@ export default function VPSPaymentForm({ selectedPlan, onBack }: VPSPaymentFormP
     </div>
   );
 }
-
-    
