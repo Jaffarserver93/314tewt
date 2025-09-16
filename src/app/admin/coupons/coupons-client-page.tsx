@@ -33,7 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 const couponSchema = z.object({
-  code: z.string().min(3, "Code must be at least 3 characters.").max(20).toUpperCase(),
+  code: z.string().min(3, "Code must be at least 3 characters.").max(20).transform(val => val.toUpperCase()),
   discount_percentage: z.preprocess(
     (a) => (a === '' || a === undefined ? undefined : parseInt(String(a), 10)),
     z.number({ required_error: 'Discount is required.'}).min(1, "Discount must be at least 1%").max(100, "Discount cannot exceed 100%")
@@ -188,7 +188,7 @@ export default function CouponsClientPage({ initialCoupons }: CouponsClientPageP
                   <FormItem>
                       <FormLabel>Coupon Code</FormLabel>
                       <div className="flex gap-2">
-                          <FormControl><Input placeholder="SAVE20" {...field} /></FormControl>
+                          <FormControl><Input placeholder="SAVE20" {...field} style={{textTransform: 'uppercase'}} /></FormControl>
                           <Button type="button" variant="outline" onClick={generateRandomCode}>Generate</Button>
                       </div>
                       <FormMessage />

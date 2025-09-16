@@ -59,6 +59,7 @@ export async function createCouponAction(values: z.infer<typeof couponSchema>) {
 
     const { error } = await supabase.from('coupons').insert({ 
         ...parsedValues,
+        code: parsedValues.code.toUpperCase(),
         usage_count: 0,
         is_active: true,
     });
