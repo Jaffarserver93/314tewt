@@ -6,6 +6,7 @@ import './globals.css';
 import AnimatedBackground from '@/components/layout/animated-background';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
+import { ThemeProvider } from '@/components/theme-provider';
 
 export default function RootLayout({
   children,
@@ -13,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -22,13 +23,20 @@ export default function RootLayout({
         <meta name="description" content="Premium domain registration, blazing-fast Minecraft hosting, and enterprise VPS solutions for Indian users." />
       </head>
       <body className="font-body antialiased overflow-x-hidden">
-        <SessionProvider>
-          <AnimatedBackground />
-          <Header />
-          {children}
-          <Footer />
-          <Toaster />
-        </SessionProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <SessionProvider>
+            <AnimatedBackground />
+            <Header />
+            {children}
+            <Footer />
+            <Toaster />
+          </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
