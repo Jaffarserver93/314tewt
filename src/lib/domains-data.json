@@ -1,0 +1,33 @@
+
+{
+  "tlds": [
+    { "tld": ".com", "price": "₹799", "originalPrice": "₹999" },
+    { "tld": ".in", "price": "₹499", "originalPrice": "₹699" },
+    { "tld": ".net", "price": "₹849", "originalPrice": "₹1099" },
+    { "tld": ".org", "price": "₹899", "originalPrice": "₹1199" },
+    { "tld": ".co.in", "price": "₹399", "originalPrice": "₹599" },
+    { "tld": ".xyz", "price": "₹99", "originalPrice": "₹899" }
+  ],
+  "features": [
+    {
+      "icon": "ShieldCheck",
+      "title": "Free WHOIS Privacy",
+      "description": "Protect your personal information from spammers and marketers. We keep your data safe, for free, forever."
+    },
+    {
+      "icon": "Globe",
+      "title": "Easy DNS Management",
+      "description": "Full control over your domain's DNS records with our simple yet powerful control panel. No technical expertise required."
+    },
+    {
+      "icon": "Zap",
+      "title": "Instant Activation",
+      "description": "Your domain is registered and ready to use within minutes of a successful purchase. Get your idea online, faster."
+    },
+    {
+      "icon": "LifeBuoy",
+      "title": "24/7 Expert Support",
+      "description": "Our dedicated support team is available around the clock to help you with any domain-related questions."
+    }
+  ]
+}
