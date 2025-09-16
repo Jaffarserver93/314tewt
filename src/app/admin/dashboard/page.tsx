@@ -1,5 +1,6 @@
+
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Users, BarChart, Server, IndianRupee, ShoppingCart } from 'lucide-react';
+import { Users, Hourglass, Server, IndianRupee, ShoppingCart } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 async function getTotalUsers() {
@@ -62,12 +63,12 @@ export default async function AdminDashboard() {
 
         <Card className="glassmorphism hover:border-primary/50 transition-colors">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Site Traffic</CardTitle>
-            <BarChart className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Pending Orders</CardTitle>
+            <Hourglass className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1.2M</div>
-            <p className="text-xs text-muted-foreground">Visits this month</p>
+            <div className="text-2xl font-bold">15</div>
+            <p className="text-xs text-muted-foreground">Awaiting confirmation</p>
           </CardContent>
         </Card>
       </div>
