@@ -33,6 +33,9 @@ const planSchema = z.object({
   storage: z.string().min(1, "Storage is required."),
   cpu: z.string().min(1, "CPU is required."),
   slots: z.string().min(1, "Slots are required."),
+  databases: z.string().min(1, "Databases are required."),
+  backups: z.string().min(1, "Backups are required."),
+  ports: z.string().min(1, "Ports are required."),
   is_popular: z.boolean().default(false),
 });
 
@@ -61,6 +64,9 @@ export default function MinecraftClientPage({ initialPlans }: MinecraftClientPag
         storage: '',
         cpu: '',
         slots: '',
+        databases: '',
+        backups: '',
+        ports: '',
         is_popular: false,
     }
   });
@@ -78,6 +84,9 @@ export default function MinecraftClientPage({ initialPlans }: MinecraftClientPag
         storage: '',
         cpu: '',
         slots: '',
+        databases: '',
+        backups: '',
+        ports: '',
         is_popular: false,
       });
     }
@@ -156,9 +165,9 @@ export default function MinecraftClientPage({ initialPlans }: MinecraftClientPag
                 <TableHead>Category</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>RAM</TableHead>
-                <TableHead>Storage</TableHead>
-                <TableHead>CPU</TableHead>
-                <TableHead>Slots</TableHead>
+                <TableHead>Databases</TableHead>
+                <TableHead>Backups</TableHead>
+                <TableHead>Ports</TableHead>
                 <TableHead>Popular</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -170,9 +179,9 @@ export default function MinecraftClientPage({ initialPlans }: MinecraftClientPag
                   <TableCell><Badge variant="outline" className={cn("capitalize", categoryColors[plan.category])}>{plan.category}</Badge></TableCell>
                   <TableCell>₹{plan.price}/mo</TableCell>
                   <TableCell>{plan.ram}</TableCell>
-                  <TableCell>{plan.storage}</TableCell>
-                  <TableCell>{plan.cpu}</TableCell>
-                  <TableCell>{plan.slots}</TableCell>
+                  <TableCell>{plan.databases}</TableCell>
+                  <TableCell>{plan.backups}</TableCell>
+                  <TableCell>{plan.ports}</TableCell>
                   <TableCell>
                     {plan.is_popular && <Badge className="bg-primary text-primary-foreground gap-1"><Award className="w-3 h-3"/> Popular</Badge>}
                   </TableCell>
@@ -239,6 +248,9 @@ export default function MinecraftClientPage({ initialPlans }: MinecraftClientPag
                 <FormField control={form.control} name="storage" render={({ field }) => (<FormItem><FormLabel>Storage</FormLabel><FormControl><Input placeholder="5GB NVMe" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="cpu" render={({ field }) => (<FormItem><FormLabel>CPU</FormLabel><FormControl><Input placeholder="1 vCore" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="slots" render={({ field }) => (<FormItem><FormLabel>Player Slots</FormLabel><FormControl><Input placeholder="10 Players" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="databases" render={({ field }) => (<FormItem><FormLabel>Databases</FormLabel><FormControl><Input placeholder="1" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="backups" render={({ field }) => (<FormItem><FormLabel>Backups</FormLabel><FormControl><Input placeholder="1" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="ports" render={({ field }) => (<FormItem><FormLabel>Ports</FormLabel><FormControl><Input placeholder="1" {...field} /></FormControl><FormMessage /></FormItem>)} />
               </div>
               <FormField control={form.control} name="is_popular" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Most Popular</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
               <DialogFooter className="pt-4 sticky bottom-0 bg-background py-4">

@@ -17,6 +17,9 @@ const planSchema = z.object({
   storage: z.string().min(1, "Storage is required."),
   cpu: z.string().min(1, "CPU is required."),
   slots: z.string().min(1, "Slots are required."),
+  databases: z.string().min(1, "Databases are required."),
+  backups: z.string().min(1, "Backups are required."),
+  ports: z.string().min(1, "Ports are required."),
   is_popular: z.boolean().default(false),
 });
 

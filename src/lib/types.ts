@@ -51,6 +51,9 @@ export interface MinecraftPlan {
   storage: string;
   cpu: string;
   slots: string;
+  databases: string;
+  backups: string;
+  ports: string;
   is_popular: boolean;
 }
 
