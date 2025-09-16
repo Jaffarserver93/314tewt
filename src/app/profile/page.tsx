@@ -65,7 +65,7 @@ export default async function ProfilePage() {
       id: userWithDetails.id,
       name: userWithDetails.username,
       email: userWithDetails.email,
-      image: userWith-details.avatar_url,
+      image: userWithDetails.avatar_url,
       role: userWithDetails.role,
       status: userWithDetails.status,
       createdAt: userWithDetails.created_at,
