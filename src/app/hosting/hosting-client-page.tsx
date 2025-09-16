@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { MinecraftPlan } from '@/lib/types';
-import { Card } from '@/components/ui/card';
-import PlanTabs from './PlanTabs';
 import PaymentForm from './PaymentForm';
+import type { MinecraftPlan } from '@/lib/types';
+import PlanTabs from './PlanTabs';
+import { Card } from '@/components/ui/card';
+import ScrollToPlansButton from './ScrollToPlansButton';
+
 
 interface HostingClientPageProps {
   initialPlans: MinecraftPlan[];
