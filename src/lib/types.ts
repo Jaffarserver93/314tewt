@@ -1,5 +1,6 @@
 
 
+
 export interface TLD {
   id: number;
   name: string;
@@ -28,4 +29,8 @@ export interface MinecraftPlan {
   cpu: string;
   slots: string;
   is_popular: boolean;
+}
+
+export interface PlansData {
+  plans: MinecraftPlan[];
 }
