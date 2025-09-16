@@ -25,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { confirmOrderAction, cancelOrderAction, deleteOrderAction } from "./actions";
+import { confirmOrderAction, cancelOrderAction, deleteOrderAction } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
