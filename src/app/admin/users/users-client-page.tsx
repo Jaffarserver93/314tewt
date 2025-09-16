@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -78,6 +79,7 @@ export default function UsersClientPage() {
       deleteUser 
     } = useUsers();
     const [searchTerm, setSearchTerm] = useState('');
+    const [roleFilter, setRoleFilter] = useState('all');
     const { toast } = useToast();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
@@ -208,13 +210,15 @@ export default function UsersClientPage() {
 
 
     const filteredUsers = useMemo(() => {
-        const filtered = users.filter(user =>
-            user.discordUsername.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
-        );
+        const filtered = users.filter(user => {
+            const searchMatch = user.discordUsername.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()));
+            const roleMatch = roleFilter === 'all' || user.role === roleFilter;
+            return searchMatch && roleMatch;
+        });
         setCurrentPage(1);
         return filtered;
-    }, [users, searchTerm]);
+    }, [users, searchTerm, roleFilter]);
     
     const paginatedUsers = useMemo(() => {
       const startIndex = (currentPage - 1) * usersPerPage;
@@ -324,17 +328,30 @@ export default function UsersClientPage() {
             <Card>
                 <CardHeader>
                   <CardTitle>All Users</CardTitle>
-                   <div className="flex items-center justify-between">
-                    <CardDescription>A list of all users in the system.</CardDescription>
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                        <Input
-                            type="text"
-                            placeholder="Search users..."
-                            className="pl-10"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+                   <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-4">
+                     <CardDescription>A list of all users in the system.</CardDescription>
+                     <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <div className="relative flex-grow">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input
+                                type="text"
+                                placeholder="Search users..."
+                                className="pl-10 w-full"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                         <Select value={roleFilter} onValueChange={setRoleFilter}>
+                            <SelectTrigger className="w-[160px]">
+                                <SelectValue placeholder="Filter by role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Roles</SelectItem>
+                                {roles.map(role => (
+                                    <SelectItem key={role} value={role} className="capitalize">{role}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                    </div>
                 </CardHeader>
@@ -418,7 +435,7 @@ export default function UsersClientPage() {
                     </div>
                 </CardContent>
                 {totalPages > 1 && (
-                 <CardFooter className="flex justify-center md:hidden pt-4">
+                 <CardFooter className="flex justify-center pt-4">
                      <div className="flex items-center space-x-2">
                         <Button
                             variant="outline"
@@ -449,7 +466,7 @@ export default function UsersClientPage() {
             {filteredUsers.length === 0 && (
                  <Card className="mt-6 glassmorphism">
                     <CardContent className="p-8 text-center">
-                        <p className="text-muted-foreground">No users found.</p>
+                        <p className="text-muted-foreground">No users found for the selected filters.</p>
                     </CardContent>
                 </Card>
             )}
@@ -505,5 +522,7 @@ export default function UsersClientPage() {
             </Dialog>
         </div>
     );
+
+    
 
     
