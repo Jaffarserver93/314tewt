@@ -33,7 +33,7 @@ export default function SaveDataPage() {
                 username: user.username,
                 email: user.email,
                 avatar_url: user.image,
-                role: 'user',
+                role: 'user', // Default role for new users
                 status: 'active',
                 updated_at: new Date().toISOString(),
               },
