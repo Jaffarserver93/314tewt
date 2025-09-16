@@ -27,7 +27,7 @@ export function Header() {
                   <AvatarImage src={session.user?.image ?? "https://picsum.photos/seed/user/100/100"} alt="User" />
                   <AvatarFallback>{session.user?.name?.[0]}</AvatarFallback>
                 </Avatar>
-                <Button variant="ghost" size="sm" onClick={() => signOut()}>
+                <Button variant="ghost" size="sm" onClick={() => signOut({ callbackUrl: '/' })}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
                 </Button>
