@@ -22,12 +22,16 @@ async function getOrders(userId: string): Promise<Order[]> {
   // Map Supabase data to Order type
   return data.map((order: any) => ({
       id: order.id,
+      plan_name: order.plan_name,
       planName: order.plan_name,
       type: order.type,
       status: order.status,
+      created_at: order.created_at,
       createdAt: order.created_at,
-      price: `₹${order.price}`,
+      price: order.price,
       userId: order.user_id,
+      customer_info: order.customer_info,
+      customerInfo: order.customer_info,
   }));
 }
 

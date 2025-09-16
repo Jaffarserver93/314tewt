@@ -56,7 +56,7 @@ function OrderHistoryTable({ orders }: { orders: Order[] }) {
                     </Badge>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">{format(new Date(order.createdAt), 'MMM d, yyyy')}</TableCell>
-                  <TableCell className="text-right font-medium">₹{order.price}</TableCell>
+                  <TableCell className="text-right font-medium">{order.price}</TableCell>
                 </TableRow>
               )) : (
                 <TableRow>
