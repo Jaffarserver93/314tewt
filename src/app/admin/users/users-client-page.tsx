@@ -6,12 +6,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useSession } from 'next-auth/react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Edit, Trash2, MoreVertical, Ban, UserPlus, UserCog } from "lucide-react";
+import { Search, Edit, Trash2, MoreVertical, Ban, UserPlus, UserCog, ChevronLeft, ChevronRight } from "lucide-react";
 import type { AppUser } from '@/types/next-auth';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -85,6 +85,8 @@ export default function UsersClientPage() {
     const [userToEdit, setUserToEdit] = useState<AppUser | null>(null);
     const [userToDelete, setUserToDelete] = useState<string | null>(null);
     const [selectedRole, setSelectedRole] = useState<AppUser['role'] | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const usersPerPage = 5;
 
     const addUserForm = useForm<z.infer<typeof addUserFormSchema>>({
       resolver: zodResolver(addUserFormSchema),
@@ -206,11 +208,21 @@ export default function UsersClientPage() {
 
 
     const filteredUsers = useMemo(() => {
-        return users.filter(user =>
+        const filtered = users.filter(user =>
             user.discordUsername.toLowerCase().includes(searchTerm.toLowerCase()) ||
             (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
         );
+        setCurrentPage(1);
+        return filtered;
     }, [users, searchTerm]);
+    
+    const paginatedUsers = useMemo(() => {
+      const startIndex = (currentPage - 1) * usersPerPage;
+      return filteredUsers.slice(startIndex, startIndex + usersPerPage);
+    }, [filteredUsers, currentPage, usersPerPage]);
+
+    const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+
 
     const roleBadgeColors: { [key: string]: string } = {
         user: "bg-primary/80 text-primary-foreground border-primary",
@@ -327,79 +339,111 @@ export default function UsersClientPage() {
                    </div>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>User</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Role</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Created At</TableHead>
-                                <TableHead>Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredUsers.map((user) => (
-                                <TableRow key={user.id}>
-                                    <TableCell>
-                                        <div className="flex items-center gap-3">
-                                            <Avatar>
-                                                <AvatarImage src={user.image} alt={user.discordUsername} />
-                                                <AvatarFallback>{user.discordUsername.charAt(0).toUpperCase()}</AvatarFallback>
-                                            </Avatar>
-                                            <span className="font-medium">{user.discordUsername}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell>
-                                        <Badge className={cn("capitalize", roleBadgeColors[user.role] || roleBadgeColors['user'])}>{user.role}</Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={user.status === 'active' ? 'default' : 'destructive'} className={cn("capitalize", user.status === 'active' ? 'bg-green-500/80' : 'bg-red-500/80')}>{user.status}</Badge>
-                                    </TableCell>
-                                    <TableCell>{format(new Date(user.createdAt), 'yyyy-MM-dd')}</TableCell>
-                                    <TableCell>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                                    <span className="sr-only">Open menu</span>
-                                                    <MoreVertical className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                <DropdownMenuItem onClick={() => openManageRoleDialog(user)} disabled={!canManageRole(user)}>
-                                                    <UserCog className="mr-2 h-4 w-4" />
-                                                    <span>Manage Role</span>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => handleToggleStatus(user.id)} disabled={!canBanUser(user)}>
-                                                    <Ban className="mr-2 h-4 w-4" />
-                                                    <span>{user.status === 'active' ? 'Ban' : 'Unban'}</span>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem disabled>
-                                                    <Edit className="mr-2 h-4 w-4" />
-                                                    <span>Edit (soon)</span>
-                                                </DropdownMenuItem>
-                                                {canDeleteUser(user) && (
-                                                    <>
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem
-                                                            className="text-destructive focus:bg-destructive/20 focus:text-destructive"
-                                                            onClick={() => openDeleteDialog(user.id)}
-                                                        >
-                                                            <Trash2 className="mr-2 h-4 w-4" />
-                                                            <span>Delete</span>
-                                                        </DropdownMenuItem>
-                                                    </>
-                                                )}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>User</TableHead>
+                                    <TableHead className="hidden md:table-cell">Email</TableHead>
+                                    <TableHead className="hidden sm:table-cell">Role</TableHead>
+                                    <TableHead className="hidden sm:table-cell">Status</TableHead>
+                                    <TableHead className="hidden md:table-cell">Created At</TableHead>
+                                    <TableHead>Actions</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {paginatedUsers.map((user) => (
+                                    <TableRow key={user.id}>
+                                        <TableCell>
+                                            <div className="flex items-center gap-3">
+                                                <Avatar>
+                                                    <AvatarImage src={user.image} alt={user.discordUsername} />
+                                                    <AvatarFallback>{user.discordUsername.charAt(0).toUpperCase()}</AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                  <span className="font-medium">{user.discordUsername}</span>
+                                                  <div className="text-sm text-muted-foreground md:hidden">{user.email}</div>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="hidden md:table-cell">{user.email}</TableCell>
+                                        <TableCell className="hidden sm:table-cell">
+                                            <Badge className={cn("capitalize", roleBadgeColors[user.role] || roleBadgeColors['user'])}>{user.role}</Badge>
+                                        </TableCell>
+                                        <TableCell className="hidden sm:table-cell">
+                                            <Badge variant={user.status === 'active' ? 'default' : 'destructive'} className={cn("capitalize", user.status === 'active' ? 'bg-green-500/80' : 'bg-red-500/80')}>{user.status}</Badge>
+                                        </TableCell>
+                                        <TableCell className="hidden md:table-cell">{format(new Date(user.createdAt), 'yyyy-MM-dd')}</TableCell>
+                                        <TableCell>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                                        <span className="sr-only">Open menu</span>
+                                                        <MoreVertical className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                    <DropdownMenuItem onClick={() => openManageRoleDialog(user)} disabled={!canManageRole(user)}>
+                                                        <UserCog className="mr-2 h-4 w-4" />
+                                                        <span>Manage Role</span>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleToggleStatus(user.id)} disabled={!canBanUser(user)}>
+                                                        <Ban className="mr-2 h-4 w-4" />
+                                                        <span>{user.status === 'active' ? 'Ban' : 'Unban'}</span>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem disabled>
+                                                        <Edit className="mr-2 h-4 w-4" />
+                                                        <span>Edit (soon)</span>
+                                                    </DropdownMenuItem>
+                                                    {canDeleteUser(user) && (
+                                                        <>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem
+                                                                className="text-destructive focus:bg-destructive/20 focus:text-destructive"
+                                                                onClick={() => openDeleteDialog(user.id)}
+                                                            >
+                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                <span>Delete</span>
+                                                            </DropdownMenuItem>
+                                                        </>
+                                                    )}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </CardContent>
+                {totalPages > 1 && (
+                 <CardFooter className="flex justify-center md:hidden pt-4">
+                     <div className="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                        >
+                           <ChevronLeft className="h-4 w-4" />
+                           Previous
+                        </Button>
+                        <span className="text-sm font-medium text-muted-foreground">
+                            Page {currentPage} of {totalPages}
+                        </span>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                        >
+                            Next
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </CardFooter>
+                )}
             </Card>
            
             {filteredUsers.length === 0 && (
@@ -461,4 +505,5 @@ export default function UsersClientPage() {
             </Dialog>
         </div>
     );
-}
+
+    
