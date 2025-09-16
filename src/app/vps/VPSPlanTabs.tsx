@@ -1,15 +1,14 @@
 
 'use client';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Cpu, MemoryStick, HardDrive, IndianRupee, Shield, Zap, Crown, SlidersHorizontal, Sparkles } from 'lucide-react';
-import React from 'react';
+import { Cpu, MemoryStick, HardDrive, IndianRupee, Shield, Zap, Crown, SlidersHorizontal, Sparkles, Filter, CheckCircle } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import type { VpsPlan } from '@/lib/types';
 import { useSession, signIn } from 'next-auth/react';
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface VPSPlanTabsProps {
   plans: {
@@ -45,7 +44,7 @@ const categoryStyles: { [key: string]: { bg: string; text: string; shadow: strin
 };
 
 
-const PlanCard: React.FC<{ plan: VpsPlan; category: string; onPlanSelect?: (plan: VpsPlan) => void }> = ({ plan, category, onPlanSelect }) => {
+const PlanCard: React.FC<{ plan: VpsPlan; onPlanSelect?: (plan: VpsPlan) => void }> = ({ plan, onPlanSelect }) => {
   const { data: session, status } = useSession();
   const isAuthenticated = status === 'authenticated';
 
@@ -63,8 +62,8 @@ const PlanCard: React.FC<{ plan: VpsPlan; category: string; onPlanSelect?: (plan
   <Card className={cn("glassmorphism p-8 rounded-2xl group transition-all duration-500 transform-gpu hover:scale-105 active:scale-[1.02] relative overflow-hidden flex flex-col", plan.is_popular ? 'border-2 border-primary/80' : 'border-border')}>
     <div className="flex-grow">
       <div className="text-center mb-6">
-          <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center mx-auto shadow-lg animate-pulse", categoryStyles[category].bg, categoryStyles[category].text, categoryStyles[category].shadow)}>
-            {categoryIcons[category]}
+          <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center mx-auto shadow-lg animate-pulse", categoryStyles[plan.category].bg, categoryStyles[plan.category].text, categoryStyles[plan.category].shadow)}>
+            {categoryIcons[plan.category]}
           </div>
            <h3 className="text-3xl font-bold text-foreground mt-4 mb-2 text-center">{plan.name}</h3>
       </div>
@@ -89,6 +88,8 @@ const PlanCard: React.FC<{ plan: VpsPlan; category: string; onPlanSelect?: (plan
           <li className="flex items-center"><MemoryStick className="w-5 h-5 mr-3 text-blue-400" /><span>{plan.ram} RAM</span></li>
           <li className="flex items-center"><HardDrive className="w-5 h-5 mr-3 text-blue-400" /><span>{plan.storage} Storage</span></li>
           <li className="flex items-center"><SlidersHorizontal className="w-5 h-5 mr-3 text-blue-400" /><span>{plan.bandwidth} Bandwidth</span></li>
+          <li className="flex items-center"><CheckCircle className="w-5 h-5 mr-3 text-blue-400" /><span>{plan.cpu}</span></li>
+          <li className="flex items-center"><CheckCircle className="w-5 h-5 mr-3 text-blue-400" /><span>{plan.country}</span></li>
       </ul>
 
     </div>
@@ -101,6 +102,23 @@ const PlanCard: React.FC<{ plan: VpsPlan; category: string; onPlanSelect?: (plan
 };
 
 const VPSPlanTabs: React.FC<VPSPlanTabsProps> = ({ plans, onPlanSelect }) => {
+  const [countryFilter, setCountryFilter] = useState('all');
+  const [cpuFilter, setCpuFilter] = useState('all');
+
+  const allPlans = useMemo(() => [...plans.standard, ...plans.performance, ...plans.enterprise], [plans]);
+
+  const filteredPlans = useMemo(() => {
+    return allPlans.filter(plan => {
+      const countryMatch = countryFilter === 'all' || plan.country === countryFilter;
+      const cpuMatch = cpuFilter === 'all' || plan.cpu === cpuFilter;
+      return countryMatch && cpuMatch;
+    });
+  }, [allPlans, countryFilter, cpuFilter]);
+
+  const sortedPlans = useMemo(() => {
+    return filteredPlans.sort((a, b) => a.price - b.price);
+  }, [filteredPlans]);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-12">
@@ -112,64 +130,57 @@ const VPSPlanTabs: React.FC<VPSPlanTabsProps> = ({ plans, onPlanSelect }) => {
         </p>
       </div>
 
-      <Tabs defaultValue="performance" className="w-full">
-        <div className="flex justify-center mb-10">
-          <div className="p-2 rounded-2xl glassmorphism">
-            <TabsList className="p-0 rounded-xl h-auto flex flex-col md:flex-row gap-2 bg-transparent">
-              <TabsTrigger value="standard" className="w-full md:w-auto text-base gap-2 px-6 py-3 rounded-xl justify-center data-[state=active]:text-primary-foreground data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-800 data-[state=active]:to-blue-900 data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/20 data-[state=inactive]:glassmorphism data-[state=inactive]:text-muted-foreground">
-                <Shield className="w-5 h-5" />
-                Standard
-              </TabsTrigger>
-              <TabsTrigger value="performance" className="w-full md:w-auto text-base gap-2 px-6 py-3 rounded-xl justify-center data-[state=active]:text-primary-foreground data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-800 data-[state=active]:to-blue-900 data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/20 data-[state=inactive]:glassmorphism data-[state=inactive]:text-muted-foreground">
-                <Zap className="w-5 h-5" />
-                Performance
-              </TabsTrigger>
-              <TabsTrigger value="enterprise" className="w-full md:w-auto text-base gap-2 px-6 py-3 rounded-xl justify-center data-[state=active]:text-primary-foreground data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-800 data-[state=active]:to-blue-900 data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/20 data-[state=inactive]:glassmorphism data-[state=inactive]:text-muted-foreground">
-                <Crown className="w-5 h-5" />
-                Enterprise
-              </TabsTrigger>
-            </TabsList>
+      <div className="flex justify-center mb-10">
+          <div className="p-2 rounded-2xl glassmorphism flex items-center gap-4">
+             <div className="flex items-center gap-2 text-muted-foreground">
+                <Filter className="w-5 h-5" />
+                <span className="font-medium">Filter by</span>
+             </div>
+             <Select value={countryFilter} onValueChange={setCountryFilter}>
+                <SelectTrigger className="w-[180px] bg-gradient-to-r from-blue-500/80 to-cyan-500/80 text-white border-cyan-400/50">
+                    <SelectValue placeholder="Select Country" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Countries</SelectItem>
+                    <SelectItem value="India">🇮🇳 India</SelectItem>
+                    <SelectItem value="Germany">🇩🇪 Germany</SelectItem>
+                </SelectContent>
+             </Select>
+             <Select value={cpuFilter} onValueChange={setCpuFilter}>
+                <SelectTrigger className="w-[280px] bg-gradient-to-r from-purple-500/80 to-pink-500/80 text-white border-pink-400/50">
+                    <SelectValue placeholder="Select CPU/GPU" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All CPUs</SelectItem>
+                    <SelectItem value="AMD Ryzen 7 7700">
+                        <div className="flex items-center gap-2">
+                            <Cpu className="w-4 h-4"/>
+                            AMD Ryzen 7 7700 Premium
+                        </div>
+                    </SelectItem>
+                    <SelectItem value="Intel Xeon">
+                        <div className="flex items-center gap-2">
+                           <Cpu className="w-4 h-4"/>
+                           Intel Xeon - Standard
+                        </div>
+                    </SelectItem>
+                </SelectContent>
+             </Select>
           </div>
         </div>
         
-        <TabsContent value="standard">
-          {plans.standard.length > 0 ? (
+        {sortedPlans.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {plans.standard.map(p => <PlanCard key={p.id} plan={p} category="standard" onPlanSelect={onPlanSelect} />)}
+                {sortedPlans.map(p => <PlanCard key={p.id} plan={p} onPlanSelect={onPlanSelect} />)}
             </div>
           ) : (
             <div className="text-center text-muted-foreground py-16">
-                <p>Standard plans are not available at the moment.</p>
+                <p>No plans match the selected filters.</p>
             </div>
           )}
-        </TabsContent>
-        <TabsContent value="performance">
-          {plans.performance.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {plans.performance.map(p => <PlanCard key={p.id} plan={p} category="performance" onPlanSelect={onPlanSelect} />)}
-            </div>
-          ) : (
-            <div className="text-center text-muted-foreground py-16">
-                <p>Performance plans are not available at the moment.</p>
-            </div>
-          )}
-        </TabsContent>
-        <TabsContent value="enterprise">
-          {plans.enterprise.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {plans.enterprise.map(p => <PlanCard key={p.id} plan={p} category="enterprise" onPlanSelect={onPlanSelect} />)}
-            </div>
-          ) : (
-            <div className="text-center text-muted-foreground py-16">
-                <p>Enterprise plans are not available at the moment.</p>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+
     </div>
   );
 };
 
 export default VPSPlanTabs;
-
-    
