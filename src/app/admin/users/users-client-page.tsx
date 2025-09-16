@@ -378,8 +378,15 @@ export default function UsersClientPage() {
                                                     <AvatarFallback>{user.discordUsername.charAt(0).toUpperCase()}</AvatarFallback>
                                                 </Avatar>
                                                 <div>
-                                                  <span className="font-medium">{user.discordUsername}</span>
+                                                  <div className="font-medium">{user.discordUsername}</div>
                                                   <div className="text-sm text-muted-foreground md:hidden">{user.email}</div>
+                                                  <div className="flex flex-wrap items-center gap-2 mt-1 sm:hidden">
+                                                    <Badge className={cn("capitalize text-xs", roleBadgeColors[user.role] || roleBadgeColors['user'])}>{user.role}</Badge>
+                                                    <Badge variant={user.status === 'active' ? 'default' : 'destructive'} className={cn("capitalize text-xs", user.status === 'active' ? 'bg-green-500/80' : 'bg-red-500/80')}>{user.status}</Badge>
+                                                  </div>
+                                                  <div className="text-xs text-muted-foreground mt-1 md:hidden">
+                                                    Joined: {format(new Date(user.createdAt), 'dd/MM/yy')}
+                                                  </div>
                                                 </div>
                                             </div>
                                         </TableCell>
@@ -522,6 +529,8 @@ export default function UsersClientPage() {
             </Dialog>
         </div>
     );
+
+    
 
     
 
