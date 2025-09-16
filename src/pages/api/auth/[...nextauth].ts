@@ -45,9 +45,18 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async redirect({ url, baseUrl }) {
-      if (url.startsWith('/')) return `${baseUrl}${url}`
-      else if (new URL(url).origin === baseUrl) return url
-      return `${baseUrl}/save-data`;
+      // After a successful sign-in, we want to ensure user data is saved.
+      // We check if the redirect URL is the base URL (i.e., home page).
+      // If it is, we redirect to '/save-data' to trigger the data saving process.
+      const homeUrl = new URL("/", baseUrl);
+      const redirectUrl = new URL(url, baseUrl);
+
+      if (redirectUrl.pathname === homeUrl.pathname && redirectUrl.search === "") {
+        return `${baseUrl}/save-data`;
+      }
+
+      // For all other cases (e.g., sign-out, or specific redirects), use the default URL.
+      return url;
     },
     async jwt({ token, account, profile }) {
       if (account && profile) {
