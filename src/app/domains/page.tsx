@@ -6,7 +6,7 @@ import DomainsClientPage from './domains-client-page';
 async function getData(): Promise<{ tlds: TLD[], features: DomainFeature[] }> {
     const tldsPromise = supabase
         .from('tlds')
-        .select('tld, price, originalPrice:original_price');
+        .select('id, name, price, original_price, featured, trending, discount, premium');
         
     const featuresPromise = supabase
         .from('domain_features')
@@ -24,8 +24,20 @@ async function getData(): Promise<{ tlds: TLD[], features: DomainFeature[] }> {
         console.error("Failed to read features data from Supabase:", featuresError);
     }
 
+    const formattedTlds = (tlds as any[]).map(item => ({
+        id: item.id,
+        name: item.name,
+        price: Number(item.price),
+        originalPrice: item.original_price ? Number(item.original_price) : undefined,
+        featured: item.featured,
+        trending: item.trending,
+        discount: item.discount,
+        premium: item.premium,
+    })) || [];
+
+
     return {
-        tlds: (tlds as TLD[]) || [],
+        tlds: formattedTlds,
         features: (features as DomainFeature[]) || []
     };
 }
@@ -36,3 +48,4 @@ export default async function DomainsPage() {
 
     return <DomainsClientPage initialTlds={tlds} features={features} />;
 }
+
