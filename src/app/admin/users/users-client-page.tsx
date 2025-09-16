@@ -216,6 +216,9 @@ export default function UsersClientPage() {
             const roleMatch = roleFilter === 'all' || user.role === roleFilter;
             return searchMatch && roleMatch;
         });
+
+        filtered.sort((a, b) => roleHierarchy[b.role] - roleHierarchy[a.role]);
+
         setCurrentPage(1);
         return filtered;
     }, [users, searchTerm, roleFilter]);
