@@ -110,7 +110,7 @@ export default function ProfileClientPage({ user, orders }: ProfileClientPagePro
                 </div>
               </div>
               <div className="flex flex-col sm:items-end gap-2">
-                {user.role !== 'user' && user.role !== 'staff' && (
+                {user.role !== 'user' && (
                     <Link href="/admin/dashboard" className="w-full">
                     <Button variant="outline" size="sm" className="w-full">
                         <Shield className="mr-2 h-4 w-4" /> Admin Panel
