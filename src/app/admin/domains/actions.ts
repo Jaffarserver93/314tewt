@@ -14,6 +14,7 @@ const tldSchema = z.object({
   trending: z.boolean(),
   discount: z.boolean(),
   premium: z.boolean(),
+  discountPercentage: z.number().min(1).max(100).optional().nullable(),
 });
 
 const tldUpdateSchema = tldSchema.extend({
@@ -27,7 +28,7 @@ const tldDeleteSchema = z.object({
 async function getAllTlds(): Promise<TLD[]> {
     const { data, error } = await supabase
         .from('tlds')
-        .select('id, name, price, original_price, featured, trending, discount, premium')
+        .select('id, name, price, original_price, featured, trending, discount, premium, discount_percentage')
         .order('name');
         
     if (error) {
@@ -44,6 +45,7 @@ async function getAllTlds(): Promise<TLD[]> {
         trending: item.trending,
         discount: item.discount,
         premium: item.premium,
+        discountPercentage: item.discount_percentage ? Number(item.discount_percentage) : undefined,
     })) || [];
 }
 
@@ -57,7 +59,8 @@ export async function addTldAction(values: z.infer<typeof tldSchema>) {
         featured: parsedValues.featured,
         trending: parsedValues.trending,
         discount: parsedValues.discount,
-        premium: parsedValues.premium
+        premium: parsedValues.premium,
+        discount_percentage: parsedValues.discountPercentage
     });
     if (error) throw error;
     
@@ -80,7 +83,8 @@ export async function updateTldAction(values: z.infer<typeof tldUpdateSchema>) {
                 featured: parsedValues.featured,
                 trending: parsedValues.trending,
                 discount: parsedValues.discount,
-                premium: parsedValues.premium
+                premium: parsedValues.premium,
+                discount_percentage: parsedValues.discountPercentage,
             })
             .eq('id', parsedValues.id);
 
@@ -108,5 +112,3 @@ export async function deleteTldAction(values: z.infer<typeof tldDeleteSchema>) {
         return { success: false, message: error.message || "Failed to delete TLD." };
     }
 }
-
-    

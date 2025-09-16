@@ -8,7 +8,7 @@ import { authOptions } from '@/pages/api/auth/[...nextauth]';
 async function getTlds(): Promise<TLD[]> {
     const { data, error } = await supabase
         .from('tlds')
-        .select('id, name, price, original_price, featured, trending, discount, premium')
+        .select('id, name, price, original_price, featured, trending, discount, premium, discount_percentage')
         .order('name');
         
     if (error) {
@@ -25,6 +25,7 @@ async function getTlds(): Promise<TLD[]> {
         trending: item.trending,
         discount: item.discount,
         premium: item.premium,
+        discountPercentage: item.discount_percentage ? Number(item.discount_percentage) : undefined,
     })) || [];
 }
 
@@ -32,7 +33,6 @@ export default async function DomainsAdminPage() {
     const session = await getServerSession(authOptions);
     const userRole = session?.user?.role;
     
-    // Corrected 'superadmin' to 'super admin'
     if (!userRole || !['super admin', 'admin', 'manager'].includes(userRole)) {
         return (
             <div className="p-8 text-center">
@@ -46,5 +46,3 @@ export default async function DomainsAdminPage() {
 
     return <DomainsClientPage initialTlds={tlds} />;
 }
-
-    

@@ -8,6 +8,7 @@ export interface TLD {
   trending: boolean;
   discount: boolean;
   premium: boolean;
+  discountPercentage?: number;
 }
 
 export interface DomainFeature {

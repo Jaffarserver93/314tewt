@@ -36,6 +36,18 @@ const tldSchema = z.object({
   trending: z.boolean().default(false),
   discount: z.boolean().default(false),
   premium: z.boolean().default(false),
+  discountPercentage: z.preprocess(
+    (a) => (a === '' || a === undefined ? null : parseInt(String(a), 10)),
+    z.number().min(1).max(100).optional().nullable()
+  ),
+}).refine(data => {
+  if (data.discount && (!data.originalPrice || !data.discountPercentage)) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Original price and discount percentage are required for discounted TLDs.",
+  path: ['discount'],
 });
 
 type TldFormValues = z.infer<typeof tldSchema>;
@@ -63,6 +75,7 @@ export default function DomainsClientPage({ initialTlds }: DomainsClientPageProp
         trending: false,
         discount: false,
         premium: false,
+        discountPercentage: undefined,
     }
   });
 
@@ -77,6 +90,9 @@ export default function DomainsClientPage({ initialTlds }: DomainsClientPageProp
       setValue('featured', false);
       setValue('trending', false);
       setValue('premium', false);
+    } else {
+      setValue('originalPrice', undefined);
+      setValue('discountPercentage', undefined);
     }
   }, [watchDiscount, setValue]);
 
@@ -112,6 +128,7 @@ export default function DomainsClientPage({ initialTlds }: DomainsClientPageProp
         ...tld,
         price: tld.price,
         originalPrice: tld.originalPrice,
+        discountPercentage: tld.discountPercentage,
       });
     } else {
       form.reset({
@@ -122,6 +139,7 @@ export default function DomainsClientPage({ initialTlds }: DomainsClientPageProp
         trending: false,
         discount: false,
         premium: false,
+        discountPercentage: undefined,
       });
     }
     setIsFormOpen(true);
@@ -170,7 +188,7 @@ export default function DomainsClientPage({ initialTlds }: DomainsClientPageProp
   const getTag = (tld: TLD) => {
     if (tld.featured) return <Badge className="bg-yellow-400 text-black gap-1"><Star className="w-3 h-3"/> Popular</Badge>;
     if (tld.trending) return <Badge className="bg-green-500 text-white gap-1"><TrendingUp className="w-3 h-3"/> Trending</Badge>;
-    if (tld.discount) return <Badge className="bg-red-500 text-white gap-1"><Tag className="w-3 h-3"/> Discount</Badge>;
+    if (tld.discount) return <Badge className="bg-red-500 text-white gap-1"><Tag className="w-3 h-3"/> Discount ({tld.discountPercentage}%)</Badge>;
     if (tld.premium) return <Badge className="bg-purple-500 text-white gap-1"><Flame className="w-3 h-3"/> Premium</Badge>;
     return <Badge variant="outline">Standard</Badge>;
   }
@@ -257,13 +275,16 @@ export default function DomainsClientPage({ initialTlds }: DomainsClientPageProp
               <div className="space-y-4 rounded-md border p-4">
                   <FormField control={form.control} name="discount" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between"><div className="space-y-0.5"><FormLabel>Discount</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                   {watchDiscount && (
-                    <FormField control={form.control} name="originalPrice" render={({ field }) => (<FormItem><FormLabel>Original Price (₹/year)</FormLabel><FormControl><Input type="number" placeholder="1299" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value)} /></FormControl><FormMessage /></FormItem>)} />
+                    <div className="space-y-4">
+                      <FormField control={form.control} name="originalPrice" render={({ field }) => (<FormItem><FormLabel>Original Price (₹/year)</FormLabel><FormControl><Input type="number" placeholder="1299" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value)} /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name="discountPercentage" render={({ field }) => (<FormItem><FormLabel>Discount Percentage (%)</FormLabel><FormControl><Input type="number" placeholder="20" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value)} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
                   )}
                   <FormField control={form.control} name="featured" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between"><div className="space-y-0.5"><FormLabel>Featured</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                   <FormField control={form.control} name="trending" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between"><div className="space-y-0.5"><FormLabel>Trending</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                   <FormField control={form.control} name="premium" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between"><div className="space-y-0.5"><FormLabel>Premium</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
               </div>
-
+              <FormMessage>{form.formState.errors.discount?.message}</FormMessage>
               <DialogFooter className="pt-4">
                 <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
                 <Button type="submit" disabled={isSaving}>
@@ -294,5 +315,3 @@ export default function DomainsClientPage({ initialTlds }: DomainsClientPageProp
     </div>
   );
 }
-
-    
