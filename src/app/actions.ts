@@ -122,8 +122,8 @@ const createOrderSchema = z.object({
 
 export async function createOrderAction(values: z.infer<typeof createOrderSchema>) {
     try {
-        // Manually generate a prefixed ID
-        const orderId = `vps-${Math.random().toString(36).substring(2, 10)}`;
+        const prefix = values.type === 'hosting' ? 'mc' : 'vps';
+        const orderId = `${prefix}-${Math.random().toString(36).substring(2, 10)}`;
 
         const { data: newOrder, error } = await supabase
             .from('orders')
@@ -141,9 +141,6 @@ export async function createOrderAction(values: z.infer<typeof createOrderSchema
 
         if (error) throw error;
         
-        // Optionally revalidate a path if you have an order history page
-        // revalidatePath('/profile'); 
-
         return { success: true, message: 'Order created successfully.', order: newOrder as Order };
     } catch (error: any) {
         return { success: false, message: error.message || "Failed to create order." };

@@ -1,31 +1,31 @@
 
 
-
 export interface Plan {
   id: number;
   name: string;
   price: number;
   ram: string;
   cpu: string;
-  players: string;
+  slots: string;
   storage: string;
   databases: string;
   backups: string;
   ports: string;
-  popular: boolean;
-  category: 'basic' | 'recommended' | 'enterprise';
+  is_popular: boolean;
+  category: 'budget' | 'powered' | 'premium';
   addons?: {
     unit?: number;
     backup?: number;
   };
+  planType?: 'budget' | 'powered' | 'premium';
 }
 
 
 export interface PlansData {
   plans: {
-    basic: Plan[];
-    recommended: Plan[];
-    enterprise: Plan[];
+    budget: MinecraftPlan[];
+    powered: MinecraftPlan[];
+    premium: MinecraftPlan[];
   };
 }
 
@@ -61,6 +61,11 @@ export interface MinecraftPlan {
   backups: string;
   ports: string;
   is_popular: boolean;
+  addons?: {
+      unit?: number;
+      backup?: number;
+  };
+  planType?: 'budget' | 'powered' | 'premium';
 }
 
 export interface VpsPlan {
@@ -76,4 +81,3 @@ export interface VpsPlan {
   country: 'India' | 'Germany';
   cpu: 'AMD Ryzen 7 7700' | 'Intel Xeon';
 }
-
