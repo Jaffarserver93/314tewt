@@ -1,6 +1,7 @@
 
 "use client";
 
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -55,7 +56,7 @@ function OrderHistoryTable({ orders }: { orders: Order[] }) {
                     </Badge>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">{format(new Date(order.createdAt), 'MMM d, yyyy')}</TableCell>
-                  <TableCell className="text-right font-medium">{order.price}</TableCell>
+                  <TableCell className="text-right font-medium">₹{order.price}</TableCell>
                 </TableRow>
               )) : (
                 <TableRow>
@@ -78,8 +79,16 @@ interface ProfileClientPageProps {
 }
 
 export default function ProfileClientPage({ user, orders }: ProfileClientPageProps) {
+    const [joinDate, setJoinDate] = useState('N/A');
+
+    useEffect(() => {
+        if (user?.createdAt) {
+            setJoinDate(format(new Date(user.createdAt), 'MMMM d, yyyy'));
+        }
+    }, [user?.createdAt]);
+
     if (!user) return null;
-    const joinDate = user.createdAt ? format(new Date(user.createdAt), 'MMMM d, yyyy') : 'N/A';
+    
     const roleBadgeColors: { [key: string]: string } = {
         user: "bg-primary/80 text-primary-foreground border-primary",
         staff: "bg-blue-500/80 text-white border-blue-500",
