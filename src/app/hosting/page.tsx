@@ -73,7 +73,7 @@ const features = [
 async function getMinecraftPlans() {
   const { data, error } = await supabase
     .from('minecraft_plans')
-    .select('*')
+    .select('id, name, category, price, ram, storage, cpu, slots, is_popular, databases, backups, ports')
     .order('price');
 
   if (error) {

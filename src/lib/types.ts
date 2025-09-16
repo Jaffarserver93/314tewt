@@ -8,6 +8,9 @@ export interface Plan {
   cpu: string;
   slots: string;
   storage: string;
+  databases: string;
+  backups: string;
+  ports: string;
   is_popular: boolean;
   category: 'budget' | 'powered' | 'premium';
 }

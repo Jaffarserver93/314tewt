@@ -1,9 +1,10 @@
+
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Cpu, MemoryStick, HardDrive, IndianRupee, Users, Shield, Server, Sparkles, Database, History, Share2, Zap, Crown, PlusCircle } from 'lucide-react';
+import { Cpu, MemoryStick, HardDrive, IndianRupee, Users, Shield, Server, Sparkles, Database, History, Share2, Zap, Crown } from 'lucide-react';
 import React from 'react';
 import { cn } from '@/lib/utils';
 import type { Plan, PlansData } from '@/lib/types';
@@ -84,6 +85,9 @@ const PlanCard: React.FC<{ plan: Plan; category: string; onPlanSelect?: (plan: a
           <li className="flex items-center"><Cpu className="w-5 h-5 mr-3 text-emerald-400" /><span>{plan.cpu}</span></li>
           <li className="flex items-center"><Users className="w-5 h-5 mr-3 text-emerald-400" /><span>{plan.slots}</span></li>
           <li className="flex items-center"><HardDrive className="w-5 h-5 mr-3 text-emerald-400" /><span>{plan.storage} Storage</span></li>
+          <li className="flex items-center"><Database className="w-5 h-5 mr-3 text-emerald-400" /><span>{plan.databases} Databases</span></li>
+          <li className="flex items-center"><History className="w-5 h-5 mr-3 text-emerald-400" /><span>{plan.backups} Backups</span></li>
+          <li className="flex items-center"><Share2 className="w-5 h-5 mr-3 text-emerald-400" /><span>{plan.ports} Ports</span></li>
           <li className="flex items-center"><Shield className="w-5 h-5 mr-3 text-emerald-400" /><span>DDoS Protection</span></li>
           <li className="flex items-center"><Server className="w-5 h-5 mr-3 text-emerald-400" /><span>Indian Servers</span></li>
       </ul>
