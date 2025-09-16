@@ -166,7 +166,7 @@ export default function AdminLayout({
 
   if (status === "loading") {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           <p className="text-muted-foreground">Loading session...</p>
@@ -180,7 +180,7 @@ export default function AdminLayout({
 
   if (!user?.role || !allowedRoles.includes(user.role)) {
     return (
-        <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="flex items-center justify-center min-h-screen">
             <Card className="w-full max-w-md text-center glassmorphism p-8">
                 <CardHeader>
                     <div className="mx-auto bg-red-500/20 rounded-full p-4 w-fit">
@@ -208,7 +208,7 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen text-foreground">
       <AdminLayoutContent>{children}</AdminLayoutContent>
     </div>
   );

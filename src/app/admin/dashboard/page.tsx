@@ -71,16 +71,6 @@ export default async function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
-      
-      <Card className="glassmorphism">
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>A log of recent events on the platform.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <p className="text-muted-foreground">No recent activity to display.</p>
-        </CardContent>
-      </Card>
 
     </div>
   );
