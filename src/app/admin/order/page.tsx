@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import { supabase } from '@/lib/supabase';
 import type { Order } from '@/lib/database';
-import { OrderStatusDistributionChart } from './charts';
+import OrderStatusChart from "../dashboard/order-status-chart";
 import { RecentOrdersTable } from "./recent-orders";
 import { OrdersTable } from "./my-orders";
 
@@ -19,9 +19,7 @@ async function getOrderAnalytics() {
         console.error('Error reading data for order page:', error);
         return {
             totalOrders: 0,
-            pendingOrders: 0,
-            confirmedOrders: 0,
-            cancelledOrders: 0,
+            orderStats: { confirmed: 0, pending: 0, cancelled: 0 },
             allOrders: [],
             minecraftOrders: [],
             vpsOrders: [],
@@ -30,9 +28,13 @@ async function getOrderAnalytics() {
     }
     
     const totalOrders = orders.length;
-    const pendingOrders = orders.filter(o => o.status === 'pending').length;
-    const confirmedOrders = orders.filter(o => o.status === 'confirmed').length;
-    const cancelledOrders = orders.filter(o => o.status === 'cancelled').length;
+    const orderStats = orders.reduce((acc, order) => {
+        if (order.status) {
+            acc[order.status as keyof typeof acc]++;
+        }
+        return acc;
+    }, { confirmed: 0, pending: 0, cancelled: 0 });
+
 
     const minecraftOrders = orders.filter(o => o.type === 'hosting');
     const vpsOrders = orders.filter(o => o.type === 'vps');
@@ -40,9 +42,7 @@ async function getOrderAnalytics() {
     
     return {
         totalOrders,
-        pendingOrders,
-        confirmedOrders,
-        cancelledOrders,
+        orderStats,
         allOrders: orders as Order[],
         minecraftOrders: minecraftOrders as Order[],
         vpsOrders: vpsOrders as Order[],
@@ -91,7 +91,7 @@ export default async function OrderPage() {
                         <Clock className="h-5 w-5 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{analytics.pendingOrders}</div>
+                        <div className="text-2xl font-bold">{analytics.orderStats.pending}</div>
                         <p className="text-xs text-muted-foreground">Awaiting confirmation</p>
                     </CardContent>
                 </Card>
@@ -107,8 +107,8 @@ export default async function OrderPage() {
                         <CardTitle>Order Status</CardTitle>
                         <CardDescription>Distribution of confirmed, pending, and cancelled orders.</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                         <OrderStatusDistributionChart confirmed={analytics.confirmedOrders} pending={analytics.pendingOrders} cancelled={analytics.cancelledOrders} />
+                    <CardContent className="flex justify-center">
+                         <OrderStatusChart data={analytics.orderStats} />
                     </CardContent>
                 </Card>
             </div>
