@@ -14,9 +14,9 @@ interface OrderStatusDistributionChartProps {
 
 export function OrderStatusDistributionChart({ confirmed, pending, cancelled }: OrderStatusDistributionChartProps) {
   const chartData = [
-    { status: "Confirmed", count: confirmed, fill: "hsl(var(--chart-2))" },
-    { status: "Pending", count: pending, fill: "hsl(var(--chart-1))" },
-    { status: "Cancelled", count: cancelled, fill: "hsl(0, 84.2%, 60.2%)" },
+    { status: "Confirmed", count: confirmed, fill: "hsl(142.1 76.2% 36.3%)" }, // green
+    { status: "Pending", count: pending, fill: "hsl(47.9 95.8% 53.1%)" }, // yellow
+    { status: "Cancelled", count: cancelled, fill: "hsl(0 84.2% 60.2%)" }, // red
   ]
 
   const chartConfig = {
@@ -25,15 +25,15 @@ export function OrderStatusDistributionChart({ confirmed, pending, cancelled }: 
     },
     Confirmed: {
       label: "Confirmed",
-      color: "hsl(var(--chart-2))",
+      color: "hsl(142.1 76.2% 36.3%)",
     },
     Pending: {
       label: "Pending",
-      color: "hsl(var(--chart-1))",
+      color: "hsl(47.9 95.8% 53.1%)",
     },
     Cancelled: {
         label: "Cancelled",
-        color: "hsl(0, 84.2%, 60.2%)",
+        color: "hsl(0 84.2% 60.2%)",
     },
   } satisfies ChartConfig
 
