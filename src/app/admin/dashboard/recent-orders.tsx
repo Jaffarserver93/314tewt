@@ -17,51 +17,68 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { FileDown } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 const demoOrders = [
-  {
+    {
     customer: {
-      name: "jaffar.king King",
-      email: "mohammedjaffar2288@gmail.com",
+      name: "Liam Johnson",
+      email: "liam@example.com",
     },
     type: "Minecraft",
-    status: "Pending",
-    date: "2025-09-13",
+    status: "Confirmed",
+    date: "2025-09-15",
     amount: "₹260/mo",
   },
   {
     customer: {
-      name: "jaffar.king King",
-      email: "mohammedjaffar2288@gmail.com",
+      name: "Olivia Smith",
+      email: "olivia@example.com",
     },
     type: "Vps",
     status: "Pending",
-    date: "2025-09-13",
+    date: "2025-09-14",
     amount: "₹520/mo",
+  },
+    {
+    customer: {
+      name: "Noah Williams",
+      email: "noah@example.com",
+    },
+    type: "Domain",
+    status: "Cancelled",
+    date: "2025-09-13",
+    amount: "₹199/year",
   },
   {
     customer: {
-      name: "jaffar.king King",
-      email: "mohammedjaffar2288@gmail.com",
+      name: "Emma Brown",
+      email: "emma@example.com",
     },
     type: "Minecraft",
-    status: "Pending",
-    date: "2025-09-13",
+    status: "Confirmed",
+    date: "2025-09-12",
     amount: "₹260/mo",
   },
   {
     customer: {
-      name: "jaffar.king J",
-      email: "mohammedjaffar2288@gmail.com",
+      name: "James Jones",
+      email: "james@example.com",
     },
-    type: "Domain",
+    type: "Vps",
     status: "Pending",
-    date: "2025-09-13",
-    amount: "₹199/year",
+    date: "2025-09-11",
+    amount: "₹520/mo",
   },
 ]
 
 export default function RecentOrders() {
+    const statusColors: { [key: string]: string } = {
+        Pending: 'border-yellow-500/30 bg-yellow-500/20 text-yellow-400',
+        Confirmed: 'border-green-500/30 bg-green-500/20 text-green-400',
+        Cancelled: 'border-red-500/30 bg-red-500/20 text-red-400',
+    };
+
   return (
     <Card className="glassmorphism">
       <CardHeader className="flex flex-row items-center">
@@ -96,7 +113,7 @@ export default function RecentOrders() {
                 </TableCell>
                 <TableCell>{order.type}</TableCell>
                 <TableCell>
-                  <Badge className="text-xs" variant="outline">{order.status}</Badge>
+                  <Badge className={cn("text-xs capitalize", statusColors[order.status])} variant="outline">{order.status}</Badge>
                 </TableCell>
                 <TableCell>{order.date}</TableCell>
                 <TableCell className="text-right">{order.amount}</TableCell>
