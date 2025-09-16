@@ -7,4 +7,5 @@ export interface Order {
   createdAt: string;
   price: string;
   userId: string;
+  customerInfo?: any;
 }

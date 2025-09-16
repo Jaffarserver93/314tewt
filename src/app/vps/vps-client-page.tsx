@@ -6,6 +6,7 @@ import VPSPaymentForm from './VPSPaymentForm';
 import type { VpsPlan } from '@/lib/types';
 import VPSPlanTabs from './VPSPlanTabs';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 interface VpsClientPageProps {
   initialPlans: VpsPlan[];
@@ -43,7 +44,9 @@ export default function VpsClientPage({ initialPlans, staticContent, children }:
               <p className="text-xl dark:text-muted-foreground mb-10 leading-relaxed">
                 Join developers and businesses who trust JXFRCloud™ for their high-performance hosting needs.
               </p>
-              {children}
+               <Button size="lg" className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-10 py-5 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 group">
+                  Choose Your VPS Plan
+              </Button>
             </Card>
           </div>
         </section>
@@ -51,3 +54,4 @@ export default function VpsClientPage({ initialPlans, staticContent, children }:
     </>
   );
 }
+

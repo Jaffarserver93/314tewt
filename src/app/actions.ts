@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
 import type { AppUser } from '@/types/next-auth';
+import type { Order } from '@/lib/database';
 
 const addUserFormSchema = z.object({
   discordUsername: z.string().min(2, "Username must be at least 2 characters."),
@@ -108,4 +109,39 @@ export async function updateUserRoleAction(userId: string, role: AppUser['role']
   } catch (error: any) {
     return { success: false, message: error.message };
   }
+}
+
+const createOrderSchema = z.object({
+    userId: z.string(),
+    planName: z.string(),
+    type: z.enum(['hosting', 'vps', 'domain']),
+    status: z.enum(['pending', 'confirmed', 'cancelled']),
+    price: z.string(),
+    customerInfo: z.record(z.any()),
+});
+
+export async function createOrderAction(values: z.infer<typeof createOrderSchema>) {
+    try {
+        const { data: newOrder, error } = await supabase
+            .from('orders')
+            .insert({
+                user_id: values.userId,
+                plan_name: values.planName,
+                type: values.type,
+                status: values.status,
+                price: values.price,
+                customer_info: values.customerInfo,
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+        
+        // Optionally revalidate a path if you have an order history page
+        // revalidatePath('/profile'); 
+
+        return { success: true, message: 'Order created successfully.', order: newOrder as Order };
+    } catch (error: any) {
+        return { success: false, message: error.message || "Failed to create order." };
+    }
 }

@@ -1,5 +1,6 @@
 
 
+
 export interface Plan {
   id: number;
   name: string;
@@ -75,3 +76,4 @@ export interface VpsPlan {
   country: 'India' | 'Germany';
   cpu: 'AMD Ryzen 7 7700' | 'Intel Xeon';
 }
+
