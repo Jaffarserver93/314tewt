@@ -160,7 +160,7 @@ export function Header() {
           <Link href="/" className="flex items-center space-x-2 sm:space-x-3 cursor-pointer">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
                 <Image   
-                  src="https://cdn.discordapp.com/attachments/1388084142595637291/1416149705779445862/05b5bc0e84997d92e62826cfce30b63a.webp?ex=68c5cbb0&is=68c47a30&hm=f64d69b56b38ce1bc2f380057c4520516617c134bcd6d57b4556cc83df636399&"   
+                  src="https://cdn.discordapp.com/attachments/1388084142595637291/1416149705779445862/05b5bc0e84997d92e62826cfce30b63a.webp?ex=68cb11b0&is=68c9c030&hm=acec0436cdbde593389ebfd757308ba83bb84bfff24b7f57b53e59e75eee1428&"   
                   alt="JXFRCloud Logo"   
                   width={40}
                   height={40}
