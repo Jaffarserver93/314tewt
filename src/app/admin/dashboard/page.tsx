@@ -47,6 +47,26 @@ async function getPendingOrders() {
     return count || 0;
 }
 
+async function getTotalRevenue() {
+    const { data, error } = await supabase
+        .from('orders')
+        .select('price, status')
+        .eq('status', 'confirmed');
+    
+    if (error) {
+        console.error('Error fetching revenue:', error);
+        return 0;
+    }
+
+    const totalRevenue = data.reduce((sum, order) => {
+        const priceString = order.price || '0';
+        const numericPrice = parseFloat(priceString.replace(/[^0-9.]/g, ''));
+        return sum + (isNaN(numericPrice) ? 0 : numericPrice);
+    }, 0);
+    
+    return totalRevenue;
+}
+
 async function getOrderStats() {
     const { data, error } = await supabase
         .from('orders')
@@ -85,6 +105,7 @@ export default async function AdminDashboard() {
   const totalUsers = await getTotalUsers();
   const totalOrders = await getTotalOrders();
   const pendingOrders = await getPendingOrders();
+  const totalRevenue = await getTotalRevenue();
   const orderStats = await getOrderStats();
   const recentOrders = await getRecentOrders();
 
@@ -102,7 +123,7 @@ export default async function AdminDashboard() {
                 <IndianRupee className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">₹0</div>
+                <div className="text-2xl font-bold">₹{totalRevenue.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">+20.1% from last month</p>
             </CardContent>
         </Card>
