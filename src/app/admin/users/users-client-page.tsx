@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -14,8 +15,8 @@ import { Search, Edit, Trash2, MoreVertical, Ban, UserPlus, UserCog } from "luci
 import type { AppUser } from '@/types/next-auth';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { toggleUserStatusAction, deleteUserAction, addUserAction, updateUserRoleAction } from '@/app/actions';
 import { useToast } from "@/hooks/use-toast";
+import { useUsers } from './users-context';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,15 +66,17 @@ const roleHierarchy: { [key in AppUser['role']]: number } = {
   'super admin': 4,
 };
 
-interface UsersClientPageProps {
-  initialUsers: AppUser[];
-}
 
-
-export default function UsersClientPage({ initialUsers }: UsersClientPageProps) {
+export default function UsersClientPage() {
     const { data: session } = useSession();
     const currentUser = session?.user as AppUser;
-    const [users, setUsers] = useState<AppUser[]>(initialUsers);
+    const { 
+      users, 
+      addUser, 
+      toggleUserStatus, 
+      updateUserRole, 
+      deleteUser 
+    } = useUsers();
     const [searchTerm, setSearchTerm] = useState('');
     const { toast } = useToast();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -114,49 +117,38 @@ export default function UsersClientPage({ initialUsers }: UsersClientPageProps) 
 
 
     const onAddUserSubmit = async (values: z.infer<typeof addUserFormSchema>) => {
-      const result = await addUserAction(values);
-
-      if (result.success && result.user) {
-        setUsers([result.user, ...users]);
+      try {
+        await addUser(values);
         toast({
             title: "Success",
-            description: result.message as string,
+            description: "User added successfully.",
         });
         setIsAddUserDialogOpen(false);
         addUserForm.reset();
-      } else {
+      } catch (error: any) {
         toast({
           variant: "destructive",
           title: "Error",
-          description: typeof result.message === 'string' ? result.message : "An error occurred.",
+          description: error.message || "An error occurred.",
         });
       }
     };
 
 
     const handleToggleStatus = async (userId: string) => {
-        const originalUsers = [...users];
-        const userToUpdate = users.find(u => u.id === userId);
-        if (!userToUpdate) return;
-
-        const updatedUsers = users.map(u =>
-            u.id === userId ? { ...u, status: u.status === 'active' ? 'banned' : 'active' } : u
-        );
-        setUsers(updatedUsers);
-
-        const result = await toggleUserStatusAction(userId);
-
-        if (!result.success) {
-            setUsers(originalUsers);
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: result.message,
-            });
-        } else {
+        try {
+            await toggleUserStatus(userId);
+            const user = users.find(u => u.id === userId);
+            const newStatus = user?.status === 'active' ? 'banned' : 'active';
             toast({
                 title: "Success",
-                description: result.message,
+                description: `User status updated to ${newStatus}.`,
+            });
+        } catch (error: any) {
+             toast({
+                variant: "destructive",
+                title: "Error",
+                description: error.message || 'Failed to update user status.',
             });
         }
     };
@@ -169,20 +161,17 @@ export default function UsersClientPage({ initialUsers }: UsersClientPageProps) 
 
     const handleUpdateRole = async () => {
         if (!userToEdit || !selectedRole) return;
-
-        const result = await updateUserRoleAction(userToEdit.id, selectedRole);
-
-        if (result.success && result.user) {
-            setUsers(users.map(u => u.id === result.user!.id ? result.user! : u));
+        try {
+            await updateUserRole(userToEdit.id, selectedRole);
             toast({
                 title: "Success",
-                description: result.message as string,
+                description: "User role updated.",
             });
-        } else {
+        } catch(error: any) {
             toast({
                 variant: "destructive",
                 title: "Error",
-                description: result.message as string,
+                description: error.message || "Failed to update user role.",
             });
         }
         setIsManageRoleDialogOpen(false);
@@ -198,27 +187,20 @@ export default function UsersClientPage({ initialUsers }: UsersClientPageProps) 
 
     const handleDeleteUser = async () => {
         if (!userToDelete) return;
-
-        const originalUsers = [...users];
-        
-        setUsers(users.filter(u => u.id !== userToDelete));
-        setIsDeleteDialogOpen(false);
-
-        const result = await deleteUserAction(userToDelete);
-
-        if (!result.success) {
-            setUsers(originalUsers);
+        try {
+            await deleteUser(userToDelete);
+            toast({
+                title: "Success",
+                description: "User deleted successfully.",
+            });
+        } catch(error: any) {
             toast({
                 variant: "destructive",
                 title: "Error",
-                description: result.message,
-            });
-        } else {
-            toast({
-                title: "Success",
-                description: result.message,
+                description: error.message || "Failed to delete user.",
             });
         }
+        setIsDeleteDialogOpen(false);
         setUserToDelete(null);
     };
 
@@ -229,12 +211,6 @@ export default function UsersClientPage({ initialUsers }: UsersClientPageProps) 
             (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
         );
     }, [users, searchTerm]);
-
-    
-    useEffect(() => {
-      setUsers(initialUsers);
-    }, [initialUsers]);
-
 
     const roleBadgeColors: { [key: string]: string } = {
         user: "bg-primary/80 text-primary-foreground border-primary",

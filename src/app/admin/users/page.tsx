@@ -1,6 +1,8 @@
+
 import { supabase } from '@/lib/supabase';
 import UsersClientPage from './users-client-page';
 import type { AppUser } from '@/types/next-auth';
+import { UsersProvider } from './users-context';
 
 async function getUsers(): Promise<AppUser[]> {
     const { data, error } = await supabase
@@ -27,5 +29,9 @@ async function getUsers(): Promise<AppUser[]> {
 export default async function UsersPage() {
   const users = await getUsers();
 
-  return <UsersClientPage initialUsers={users} />;
+  return (
+    <UsersProvider initialUsers={users}>
+      <UsersClientPage />
+    </UsersProvider>
+  );
 }
