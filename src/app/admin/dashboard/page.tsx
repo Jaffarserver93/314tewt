@@ -1,7 +1,24 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Users, BarChart, Server } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
-export default function AdminDashboard() {
+async function getTotalUsers() {
+    const { count, error } = await supabase
+        .from('users')
+        .select('*', { count: 'exact', head: true });
+
+    if (error) {
+        console.error('Error fetching total users:', error);
+        return 0;
+    }
+
+    return count || 0;
+}
+
+
+export default async function AdminDashboard() {
+  const totalUsers = await getTotalUsers();
+
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -16,8 +33,8 @@ export default function AdminDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">10,245</div>
-            <p className="text-xs text-muted-foreground">+180.1% from last month</p>
+            <div className="text-2xl font-bold">{totalUsers}</div>
+            <p className="text-xs text-muted-foreground">Currently registered users</p>
           </CardContent>
         </Card>
 
