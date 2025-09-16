@@ -3,10 +3,10 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, IndianRupee } from 'lucide-react';
-import type { MinecraftPlan } from '@/lib/types';
+import type { Plan } from '@/lib/types';
 
 interface PaymentFormProps {
-  selectedPlan: MinecraftPlan;
+  selectedPlan: Plan;
   onBack: () => void;
 }
 
@@ -34,8 +34,8 @@ export default function PaymentForm({ selectedPlan, onBack }: PaymentFormProps) 
                         <ul className="text-sm text-muted-foreground mt-2 space-y-1">
                             <li>{selectedPlan.ram} RAM</li>
                             <li>{selectedPlan.storage} Storage</li>
-                            <li>{selectedPlan.cpu}</li>
-                            <li>{selectedPlan.slots}</li>
+                            <li>{selectedPlan.cpu} vCPU</li>
+                            <li>{selectedPlan.players} Players</li>
                         </ul>
                     </div>
                     <div>

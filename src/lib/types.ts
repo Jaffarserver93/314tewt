@@ -1,5 +1,30 @@
 
+export interface Plan {
+  id: number;
+  name: string;
+  price: number;
+  ram: string;
+  cpu: string;
+  players: string;
+  storage: string;
+  databases: string;
+  backups: string;
+  ports: string;
+  popular: boolean;
+  category: 'basic' | 'recommended' | 'enterprise';
+  addons?: {
+    unit: number;
+    backup: number;
+  };
+}
 
+export interface PlansData {
+  plans: {
+    basic: Plan[];
+    recommended: Plan[];
+    enterprise: Plan[];
+  };
+}
 
 
 export interface TLD {
@@ -32,6 +57,14 @@ export interface MinecraftPlan {
   is_popular: boolean;
 }
 
-export interface PlansData {
-  plans: MinecraftPlan[];
+export interface VpsPlan {
+  id: number;
+  name: string;
+  category: 'standard' | 'performance' | 'enterprise';
+  price: number;
+  vcpu: string;
+  ram: string;
+  storage: string;
+  bandwidth: string;
+  is_popular: boolean;
 }

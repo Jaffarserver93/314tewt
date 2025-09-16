@@ -2,22 +2,22 @@
 
 import React, { useState } from 'react';
 import PaymentForm from './PaymentForm';
-import type { MinecraftPlan } from '@/lib/types';
+import type { Plan, PlansData } from '@/lib/types';
 import PlanTabs from './PlanTabs';
 import { Card } from '@/components/ui/card';
 import ScrollToPlansButton from './ScrollToPlansButton';
 
 
 interface HostingClientPageProps {
-  initialPlans: MinecraftPlan[];
+  initialPlans: PlansData['plans'];
   staticContent: React.ReactNode;
   children: React.ReactNode;
 }
 
 export default function HostingClientPage({ initialPlans, staticContent, children }: HostingClientPageProps) {
-  const [selectedPlan, setSelectedPlan] = useState<MinecraftPlan | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
 
-  const handlePlanSelect = (plan: MinecraftPlan) => {
+  const handlePlanSelect = (plan: Plan) => {
     setSelectedPlan(plan);
   };
 

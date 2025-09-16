@@ -7,7 +7,7 @@ import HostingClientPage from './hosting-client-page';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import type { MinecraftPlan } from '@/lib/types';
+import type { Plan } from '@/lib/types';
 import ScrollToPlansButton from './ScrollToPlansButton';
 import { supabase } from '@/lib/supabase';
 import BackButton from './back-button';
@@ -70,7 +70,7 @@ const features = [
   }
 ];
 
-async function getMinecraftPlans(): Promise<MinecraftPlan[]> {
+async function getMinecraftPlans() {
   const { data, error } = await supabase
     .from('minecraft_plans')
     .select('*')
@@ -78,9 +78,16 @@ async function getMinecraftPlans(): Promise<MinecraftPlan[]> {
 
   if (error) {
     console.error('Failed to fetch minecraft plans:', error);
-    return [];
+    return { basic: [], recommended: [], enterprise: [] };
   }
-  return data;
+
+  const plans = data as Plan[];
+
+  return {
+    basic: plans.filter(p => p.category === 'basic'),
+    recommended: plans.filter(p => p.category === 'recommended'),
+    enterprise: plans.filter(p => p.category === 'enterprise'),
+  };
 }
 
 export default async function HostingPage() {
