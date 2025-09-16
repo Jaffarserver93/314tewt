@@ -1,5 +1,5 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Users, BarChart, Server } from 'lucide-react';
+import { Users, BarChart, Server, IndianRupee } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 async function getTotalUsers() {
@@ -27,6 +27,17 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="glassmorphism hover:border-primary/50 transition-colors">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                <IndianRupee className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">₹0</div>
+                <p className="text-xs text-muted-foreground">+20.1% from last month</p>
+            </CardContent>
+        </Card>
+
         <Card className="glassmorphism hover:border-primary/50 transition-colors">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
