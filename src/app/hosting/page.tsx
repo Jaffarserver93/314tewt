@@ -1,6 +1,6 @@
 
 "use client";
-import { ArrowLeft, CheckCircle, Cpu, HardDrive, HelpCircle, Server, ShieldCheck, Users, Zap, IndianRupee, Gamepad2, Award } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Cpu, HardDrive, HelpCircle, Server, ShieldCheck, Users, Zap, IndianRupee, Gamepad2, Award, Gem, Rocket, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -8,42 +8,31 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
-const plans = [
-  {
-    name: 'Budget Plan',
-    price: '49',
-    ram: '2GB',
-    storage: '10GB NVMe',
-    cpu: '2 vCores',
-    slots: '20 Players',
-    description: 'Perfect for starting a small server with friends.',
-    features: ['Basic DDoS Protection', 'Instant Setup', 'Full FTP Access'],
-    isPopular: false,
-  },
-  {
-    name: 'Powered Plan',
-    price: '149',
-    ram: '4GB',
-    storage: '30GB NVMe',
-    cpu: '4 vCores',
-    slots: '40 Players',
-    description: 'The ideal balance of power and affordability for growing communities.',
-    features: ['Advanced DDoS Protection', 'Dedicated IP Included', '1-Click Modpack Installer', 'Daily Backups'],
-    isPopular: true,
-  },
-  {
-    name: 'Premium Plan',
-    price: '299',
-    ram: '8GB',
-    storage: '60GB NVMe',
-    cpu: '4 Unlocked vCores',
-    slots: 'Unlimited Players',
-    description: 'For large communities and heavily modded servers that demand the best performance.',
-    features: ['Premium DDoS Protection', 'Premium Support', 'MySQL Database', 'All Powered Plan features'],
-    isPopular: false,
-  },
+const budgetPlans = [
+  { name: 'Stone', price: '49', ram: '1GB', storage: '5GB NVMe', cpu: '1 vCore', slots: '10 Players' },
+  { name: 'Coal', price: '99', ram: '2GB', storage: '10GB NVMe', cpu: '1 vCore', slots: '20 Players' },
+  { name: 'Iron', price: '149', ram: '3GB', storage: '15GB NVMe', cpu: '2 vCores', slots: '30 Players' },
+  { name: 'Gold', price: '199', ram: '4GB', storage: '20GB NVMe', cpu: '2 vCores', slots: '40 Players' },
+  { name: 'Lapis', price: '249', ram: '5GB', storage: '25GB NVMe', cpu: '3 vCores', slots: '50 Players' },
+];
+
+const poweredPlans = [
+  { name: 'Redstone', price: '299', ram: '6GB', storage: '30GB NVMe', cpu: '3 vCores', slots: '60 Players', isPopular: true },
+  { name: 'Diamond', price: '399', ram: '8GB', storage: '40GB NVMe', cpu: '4 vCores', slots: '80 Players' },
+  { name: 'Emerald', price: '499', ram: '10GB', storage: '50GB NVMe', cpu: '4 vCores', slots: '100 Players' },
+  { name: 'Amethyst', price: '599', ram: '12GB', storage: '60GB NVMe', cpu: '5 vCores', slots: '120 Players' },
+  { name: 'Obsidian', price: '749', ram: '16GB', storage: '80GB NVMe', cpu: '6 vCores', slots: 'Unlimited' },
+];
+
+const premiumPlans = [
+  { name: 'Netherite', price: '999', ram: '20GB', storage: '100GB NVMe', cpu: '6 Unlocked vCores', slots: 'Unlimited' },
+  { name: 'Dragon Egg', price: '1299', ram: '24GB', storage: '120GB NVMe', cpu: '7 Unlocked vCores', slots: 'Unlimited' },
+  { name: 'Warden', price: '1599', ram: '32GB', storage: '160GB NVMe', cpu: '8 Unlocked vCores', slots: 'Unlimited' },
+  { name: 'Beacon', price: '1999', ram: '48GB', storage: '240GB NVMe', cpu: '10 Unlocked vCores', slots: 'Unlimited' },
+  { name: 'End Crystal', price: '2499', ram: '64GB', storage: '320GB NVMe', cpu: '12 Unlocked vCores', slots: 'Unlimited', isPopular: true },
 ];
 
 const features = [
@@ -88,6 +77,42 @@ const faqs = [
   },
 ];
 
+const PlanCard = ({ plan }: { plan: any }) => (
+    <Card
+        className={cn(
+            'glassmorphism flex flex-col rounded-2xl transition-all duration-300 w-full',
+            plan.isPopular ? 'border-primary/50 shadow-primary/20 shadow-lg scale-105' : 'hover:border-primary/30'
+        )}
+    >
+        {plan.isPopular && (
+            <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground gap-1"><Award className="w-3 h-3"/> Most Popular</Badge>
+        )}
+        <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-bold">{plan.name}</CardTitle>
+        </CardHeader>
+        <CardContent className="flex-grow space-y-6">
+            <div className="text-center">
+                <span className="text-5xl font-bold">
+                    <IndianRupee className="inline-block h-10 w-10 -mt-2" />
+                    {plan.price}
+                </span>
+                <span className="text-muted-foreground">/mo</span>
+            </div>
+            <ul className="space-y-3 text-muted-foreground">
+                <li className="flex items-center gap-3"><Gamepad2 className="w-5 h-5 text-primary" /> <strong>{plan.ram}</strong> RAM</li>
+                <li className="flex items-center gap-3"><HardDrive className="w-5 h-5 text-primary" /> <strong>{plan.storage}</strong> Storage</li>
+                <li className="flex items-center gap-3"><Cpu className="w-5 h-5 text-primary" /> <strong>{plan.cpu}</strong></li>
+                <li className="flex items-center gap-3"><Users className="w-5 h-5 text-primary" /> <strong>{plan.slots}</strong></li>
+            </ul>
+        </CardContent>
+        <CardFooter>
+            <Button className={cn('w-full', plan.isPopular && 'bg-primary hover:bg-primary/90')}>
+                Choose Plan
+            </Button>
+        </CardFooter>
+    </Card>
+);
+
 export default function MinecraftHostingPage() {
     const router = useRouter();
   return (
@@ -109,55 +134,28 @@ export default function MinecraftHostingPage() {
         </header>
 
         <section id="pricing" className="mb-20">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {plans.map((plan) => (
-              <Card
-                key={plan.name}
-                className={cn(
-                  'glassmorphism flex flex-col rounded-2xl transition-all duration-300',
-                  plan.isPopular ? 'border-primary/50 shadow-primary/20 shadow-lg scale-105' : 'hover:border-primary/30'
-                )}
-              >
-                 {plan.isPopular && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground gap-1"><Award className="w-3 h-3"/> Most Popular</Badge>
-                )}
-                <CardHeader className="text-center">
-                  <CardTitle className="text-3xl font-bold">{plan.name}</CardTitle>
-                  <CardDescription>{plan.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex-grow space-y-6">
-                  <div className="text-center">
-                    <span className="text-5xl font-bold">
-                        <IndianRupee className="inline-block h-10 w-10 -mt-2" />
-                        {plan.price}
-                    </span>
-                    <span className="text-muted-foreground">/mo</span>
-                  </div>
-                  <ul className="space-y-3 text-muted-foreground">
-                    <li className="flex items-center gap-3"><Gamepad2 className="w-5 h-5 text-primary" /> <strong>{plan.ram}</strong> RAM</li>
-                    <li className="flex items-center gap-3"><HardDrive className="w-5 h-5 text-primary" /> <strong>{plan.storage}</strong> Storage</li>
-                    <li className="flex items-center gap-3"><Cpu className="w-5 h-5 text-primary" /> <strong>{plan.cpu}</strong></li>
-                    <li className="flex items-center gap-3"><Users className="w-5 h-5 text-primary" /> <strong>{plan.slots}</strong></li>
-                  </ul>
-                  <div className="border-t border-border/20 pt-4">
-                     <ul className="space-y-2 text-sm">
-                        {plan.features.map((feature, i) => (
-                        <li key={i} className="flex items-center gap-2 text-muted-foreground">
-                            <CheckCircle className="w-4 h-4 text-green-400" />
-                            {feature}
-                        </li>
-                        ))}
-                    </ul>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button className={cn('w-full', plan.isPopular && 'bg-primary hover:bg-primary/90')}>
-                    Choose Plan
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
+            <Tabs defaultValue="powered" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto h-auto">
+                    <TabsTrigger value="budget" className="py-3 text-lg items-center gap-2"><Gem className="w-5 h-5"/>Budget</TabsTrigger>
+                    <TabsTrigger value="powered" className="py-3 text-lg items-center gap-2"><Rocket className="w-5 h-5"/>Powered</TabsTrigger>
+                    <TabsTrigger value="premium" className="py-3 text-lg items-center gap-2"><Star className="w-5 h-5"/>Premium</TabsTrigger>
+                </TabsList>
+                <TabsContent value="budget" className="mt-10">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                        {budgetPlans.map((plan) => <PlanCard key={plan.name} plan={plan} />)}
+                    </div>
+                </TabsContent>
+                <TabsContent value="powered" className="mt-10">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                        {poweredPlans.map((plan) => <PlanCard key={plan.name} plan={plan} />)}
+                    </div>
+                </TabsContent>
+                <TabsContent value="premium" className="mt-10">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                        {premiumPlans.map((plan) => <PlanCard key={plan.name} plan={plan} />)}
+                    </div>
+                </TabsContent>
+            </Tabs>
         </section>
 
         <section id="features" className="mb-20">
