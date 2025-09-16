@@ -1,8 +1,18 @@
+"use client";
+
 import { Rocket } from "lucide-react";
 import Link from 'next/link';
+import { usePathname } from "next/navigation";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const pathname = usePathname();
+
+  const isAdminPage = pathname.startsWith('/admin');
+  if (isAdminPage) {
+    return null;
+  }
+
   return (
     <footer className="border-t">
       <div className="container flex flex-col items-center justify-between gap-4 h-24 md:h-28 md:flex-row max-w-7xl">
