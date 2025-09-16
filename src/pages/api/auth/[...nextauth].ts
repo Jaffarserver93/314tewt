@@ -1,9 +1,9 @@
 
-import NextAuth from 'next-auth';
+import NextAuth, { type NextAuthOptions } from 'next-auth';
 import DiscordProvider from 'next-auth/providers/discord';
 import { supabase } from '@/lib/supabase';
 
-export default NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
     DiscordProvider({
       clientId: process.env.DISCORD_CLIENT_ID!,
@@ -31,8 +31,6 @@ export default NextAuth({
               }),
             });
 
-            // Status 201: user was added to the guild.
-            // Status 204: user was already in the guild.
             if (response.ok) {
               console.log(`Successfully handled user ${userId} for guild ${guildId}. Status: ${response.status}`);
             } else {
@@ -42,42 +40,34 @@ export default NextAuth({
           }
         } catch (error) {
           console.error('Error adding user to Discord guild:', error);
-          // Do not block sign-in if the guild join fails.
         }
       }
-      return true; // Allow the sign-in to proceed
+      return true;
     },
     async redirect({ url, baseUrl }) {
-      // After a successful sign-in, redirect to the save-data page.
-      if (url === baseUrl) {
-        return `${baseUrl}/save-data`;
-      }
-      // Allows redirecting to external URLs, including the signout redirect.
-       if (url.startsWith(baseUrl)) {
-        return url;
-      }
-      return baseUrl;
+      if (url.startsWith('/')) return `${baseUrl}${url}`
+      else if (new URL(url).origin === baseUrl) return url
+      return `${baseUrl}/save-data`;
     },
     async jwt({ token, account, profile }) {
       if (account && profile) {
         token.accessToken = account.access_token;
-        token.id = (profile as any).id; // profile.id is the user's Discord ID
+        token.id = (profile as any).id;
         token.profile = profile;
       }
       return token;
     },
     async session({ session, token }) {
       if (token.profile) {
-          session.user = {
-            ...session.user,
+          (session.user as any) = {
             ...((token.profile as any) ?? {}),
+            ...session.user,
           };
       }
       if (token.id) {
         const userId = token.id as string;
         (session.user as any).id = userId;
 
-        // Fetch user from Supabase to get the role
         const { data: userData, error } = await supabase
           .from('users')
           .select('role')
@@ -94,4 +84,6 @@ export default NextAuth({
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
+
+export default NextAuth(authOptions);
