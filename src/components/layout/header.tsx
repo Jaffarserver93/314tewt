@@ -25,7 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/hosting", label: "Hosting" },
-  { href: "/vps", label: "VPS" },
+  { href: "#", label: "VPS" },
   { href: "/support", label: "Support" },
 ];
 
