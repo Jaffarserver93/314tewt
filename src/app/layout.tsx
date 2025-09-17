@@ -23,7 +23,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
         <title>JXFRCloud™ - Power Your Digital Dreams</title>
         <meta name="description" content="Premium domain registration, blazing-fast Minecraft hosting, and enterprise VPS solutions for Indian users." />
-        <link rel="icon" href="https://cdn.discordapp.com/attachments/1388084142595637291/1416149705779445862/05b5bc0e84997d92e62826cfce30b63a.webp?ex=68cb11b0&is=68c9c030&hm=acec0436cdbde593389ebfd757308ba83bb84bfff24b7f57b53e59e75eee1428&" type="image/webp" />
+        <link rel="icon" href="https://cdn.discordapp.com/attachments/1388084142595637291/1416149705779445862/05b5bc0e84997d92e62826cfce30b63a.webp?ex=68c5cbb0&is=68c47a30&hm=f64d69b56b38ce1bc2f380057c4520516617c134bcd6d57b4556cc83df636399&" type="image/webp" />
       </head>
       <body className="font-body antialiased overflow-x-hidden">
         <ThemeProvider
