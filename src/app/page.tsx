@@ -35,7 +35,7 @@ const services = [
     description: 'Enterprise-grade VPS with V4 processors, NVMe SSD storage, and instant deployment starting from ₹270/month.',
     features: ['V4 Processors', 'NVMe SSD Storage', 'Instant Deployment'],
     buttonText: 'Launch VPS',
-    buttonLink: '/vps',
+    buttonLink: '#',
     buttonClass: 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-blue-500/25 hover:shadow-blue-500/40',
     hoverGradient: 'bg-gradient-to-br from-blue-500/10 to-cyan-500/10',
   },
