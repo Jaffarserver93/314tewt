@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -291,9 +292,9 @@ const VPSPaymentForm: React.FC<VPSPaymentFormProps> = ({ selectedPlan, onBack })
             
             <div className="space-y-4 mt-4">
                 <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} pt-4`}>
-                    <div className="flex items-center gap-2">
-                         <input type="text" value={couponCode} onChange={(e) => setCouponCode(e.target.value.toUpperCase())} placeholder="Coupon Code" className={`flex-grow px-3 py-2 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm`} disabled={!!appliedCoupon} />
-                         <button onClick={handleApplyCoupon} className={`${themeStyles.button} text-white px-4 py-2 rounded-lg font-semibold text-sm disabled:opacity-50`} disabled={isApplyingCoupon || !!appliedCoupon}>
+                    <div className="flex flex-col sm:flex-row items-center gap-2">
+                         <input type="text" value={couponCode} onChange={(e) => setCouponCode(e.target.value.toUpperCase())} placeholder="Coupon Code" className={`flex-grow w-full px-3 py-2 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm`} disabled={!!appliedCoupon} />
+                         <button onClick={handleApplyCoupon} className={`${themeStyles.button} text-white w-full sm:w-auto px-4 py-2 rounded-lg font-semibold text-sm disabled:opacity-50`} disabled={isApplyingCoupon || !!appliedCoupon}>
                             {isApplyingCoupon ? 'Applying...' : appliedCoupon ? 'Applied' : 'Apply'}
                          </button>
                     </div>
