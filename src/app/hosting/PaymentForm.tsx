@@ -3,10 +3,12 @@
 import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
-import { ArrowLeft, User, Mail, MessageCircle, Send, CheckCircle, Gamepad2, ExternalLink, Plus, Minus, Zap, Star, Shield, Copy } from 'lucide-react';
+import { ArrowLeft, User, Mail, MessageCircle, Send, CheckCircle, Gamepad2, ExternalLink, Plus, Minus, Zap, Star, Shield, Copy, Ticket } from 'lucide-react';
 import { createOrderAction } from '@/app/actions';
-import type { MinecraftPlan, Plan as GenericPlan } from '@/lib/types';
-import type { Order } from '@/lib/database';
+import { validateCouponAction } from '@/app/admin/coupons/actions';
+import type { Coupon } from '@/app/admin/coupons/types';
+import type { MinecraftPlan } from '@/lib/types';
+import toast from 'react-hot-toast';
 
 
 interface PaymentFormProps {
@@ -25,6 +27,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, onBack }) => {
     discordUsername: (session?.user as any)?.username || '',
     serverName: ''
   });
+  
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -46,8 +52,30 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, onBack }) => {
   };
 
   const calculateTotal = () => {
+    if (appliedCoupon) {
+      const discount = selectedPlan.price * (appliedCoupon.discount_percentage / 100);
+      return Math.round(selectedPlan.price - discount);
+    }
     return selectedPlan.price;
   };
+  
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+        toast.error('Please enter a coupon code.');
+        return;
+    }
+    setIsApplyingCoupon(true);
+    const result = await validateCouponAction(couponCode, (session?.user as any).id);
+    if (result.success && result.coupon) {
+        setAppliedCoupon(result.coupon);
+        toast.success(result.message);
+    } else {
+        setAppliedCoupon(null);
+        toast.error(result.message);
+    }
+    setIsApplyingCoupon(false);
+  };
+
 
   const getThemeClasses = () => {
     switch (theme) {
@@ -100,7 +128,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, onBack }) => {
           },
           {
               name: '💰 Pricing',
-              value: `**Total:** ₹${calculateTotal()}/month`
+              value: `**Original Price:** ₹${selectedPlan.price}/month\n${appliedCoupon ? `**Coupon:** \`${appliedCoupon.code}\` (${appliedCoupon.discount_percentage}% off)\n` : ''}**Final Price:** ₹${calculateTotal()}/month`
           },
           {
               name: '🎮 Server Details',
@@ -133,6 +161,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, onBack }) => {
         price: `₹${calculateTotal()}/mo`,
         status: 'pending' as const,
         customerInfo: formData,
+        couponId: appliedCoupon?.id
     };
     
     const result = await createOrderAction(orderPayload);
@@ -142,9 +171,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, onBack }) => {
         await sendToDiscord(result.order.id);
         setIsSubmitted(true);
     } else {
-        // Handle error, maybe show a toast
-        console.error("Failed to create order:", result.message);
-        alert(`Error: ${result.message}`);
+        toast.error(result.message || 'Failed to create order.');
     }
     
     setIsSubmitting(false);
@@ -230,7 +257,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, onBack }) => {
                    <p className={`${themeStyles.textSecondary} text-sm capitalize`}>{selectedPlan.category || 'Standard'}</p>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <div className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>
+                  <div className={`text-lg sm:text-xl font-bold ${themeStyles.text} ${appliedCoupon ? 'line-through text-muted-foreground' : ''}`}>
                     ₹{selectedPlan.price}
                   </div>
                   <div className={`text-xs sm:text-sm ${themeStyles.textSecondary}`}>/month</div>
@@ -238,12 +265,30 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, onBack }) => {
               </div>
 
             </div>
-            
-            <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} pt-4`}>
-              <div className="flex justify-between items-center">
-                <span className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>Total</span>
-                <span className="text-xl sm:text-2xl font-bold text-emerald-400">₹{calculateTotal()}/mo</span>
-              </div>
+
+             <div className="space-y-4">
+                <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} pt-4`}>
+                    <div className="flex items-center gap-2">
+                         <input type="text" value={couponCode} onChange={(e) => setCouponCode(e.target.value.toUpperCase())} placeholder="Coupon Code" className={`flex-grow px-3 py-2 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm`} disabled={!!appliedCoupon} />
+                         <button onClick={handleApplyCoupon} className={`${themeStyles.button} text-white px-4 py-2 rounded-lg font-semibold text-sm disabled:opacity-50`} disabled={isApplyingCoupon || !!appliedCoupon}>
+                            {isApplyingCoupon ? 'Applying...' : appliedCoupon ? 'Applied' : 'Apply'}
+                         </button>
+                    </div>
+                </div>
+                
+                 {appliedCoupon && (
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="text-green-400 flex items-center gap-2"><Ticket className="w-4 h-4"/>Coupon '{appliedCoupon.code}' applied</span>
+                        <span className="font-bold text-green-400">-{appliedCoupon.discount_percentage}%</span>
+                    </div>
+                )}
+
+                <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} pt-4`}>
+                    <div className="flex justify-between items-center">
+                        <span className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>Total</span>
+                        <span className="text-xl sm:text-2xl font-bold text-emerald-400">₹{calculateTotal()}/mo</span>
+                    </div>
+                </div>
             </div>
           </div>
 
@@ -282,7 +327,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ selectedPlan, onBack }) => {
 
               <button type="submit" disabled={isSubmitting || !formData.firstName || !formData.lastName || !formData.email || !formData.discordUsername} className={`w-full ${themeStyles.button} disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 sm:py-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center text-sm sm:text-base`}>
                 {isSubmitting ? (
-                  <><div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white mr-2 sm:mr-3"></div>Processing...</>
+                  <><div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:h-5 border-b-2 border-white mr-2 sm:mr-3"></div>Processing...</>
                 ) : (
                   <><Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />Submit Order</>
                 )}

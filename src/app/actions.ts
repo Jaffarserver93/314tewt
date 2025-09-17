@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
 import type { AppUser } from '@/types/next-auth';
 import type { Order } from '@/lib/database';
+import { redeemCoupon } from '@/app/admin/coupons/actions';
+
 
 const addUserFormSchema = z.object({
   discordUsername: z.string().min(2, "Username must be at least 2 characters."),
@@ -119,6 +121,7 @@ const createOrderSchema = z.object({
     status: z.enum(['pending', 'confirmed', 'cancelled']),
     price: z.string(),
     customerInfo: z.record(z.any()),
+    couponId: z.string().optional(),
 });
 
 export async function createOrderAction(values: z.infer<typeof createOrderSchema>) {
@@ -148,6 +151,10 @@ export async function createOrderAction(values: z.infer<typeof createOrderSchema
             .single();
 
         if (error) throw error;
+
+        if (values.couponId) {
+            await redeemCoupon(values.couponId, values.userId);
+        }
         
         return { success: true, message: 'Order created successfully.', order: newOrder as Order };
     } catch (error: any) {

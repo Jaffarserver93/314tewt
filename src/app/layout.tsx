@@ -1,12 +1,14 @@
 "use client";
 import type { Metadata } from 'next';
 import { SessionProvider } from 'next-auth/react';
-import { Toaster } from '@/components/ui/toaster';
+import { Toaster as ShadToaster } from '@/components/ui/toaster';
 import './globals.css';
 import AnimatedBackground from '@/components/layout/animated-background';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from 'react-hot-toast';
+
 
 export default function RootLayout({
   children,
@@ -35,7 +37,8 @@ export default function RootLayout({
             <Header />
             {children}
             <Footer />
-            <Toaster />
+            <ShadToaster />
+            <Toaster position="bottom-center" />
           </SessionProvider>
         </ThemeProvider>
       </body>

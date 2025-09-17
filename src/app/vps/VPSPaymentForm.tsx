@@ -3,10 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
-import { ArrowLeft, User, Mail, MessageCircle, Send, CheckCircle, Server, ExternalLink, Key, Copy } from 'lucide-react';
+import { ArrowLeft, User, Mail, MessageCircle, Send, CheckCircle, Server, ExternalLink, Key, Copy, Ticket } from 'lucide-react';
 import { createOrderAction } from '@/app/actions';
+import { validateCouponAction } from '@/app/admin/coupons/actions';
+import type { Coupon } from '@/app/admin/coupons/types';
 import type { VpsPlan } from '@/lib/types';
-import type { Order } from '@/lib/database';
+import toast from 'react-hot-toast';
+
 
 interface VPSPaymentFormProps {
   selectedPlan: VpsPlan;
@@ -31,6 +34,10 @@ const VPSPaymentForm: React.FC<VPSPaymentFormProps> = ({ selectedPlan, onBack })
   const [orderId, setOrderId] = useState('');
   const [copied, setCopied] = useState(false);
   const [passwordCopied, setPasswordCopied] = useState(false);
+  
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
   useEffect(() => {
     // Generate a random password when the component mounts
@@ -62,6 +69,31 @@ const VPSPaymentForm: React.FC<VPSPaymentFormProps> = ({ selectedPlan, onBack })
       return;
     }
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+        toast.error('Please enter a coupon code.');
+        return;
+    }
+    setIsApplyingCoupon(true);
+    const result = await validateCouponAction(couponCode, (session?.user as any).id);
+    if (result.success && result.coupon) {
+        setAppliedCoupon(result.coupon);
+        toast.success(result.message);
+    } else {
+        setAppliedCoupon(null);
+        toast.error(result.message);
+    }
+    setIsApplyingCoupon(false);
+  };
+  
+  const calculateTotal = () => {
+    if (appliedCoupon) {
+      const discount = selectedPlan.price * (appliedCoupon.discount_percentage / 100);
+      return Math.round(selectedPlan.price - discount);
+    }
+    return selectedPlan.price;
   };
 
   const getThemeClasses = () => {
@@ -121,9 +153,8 @@ const VPSPaymentForm: React.FC<VPSPaymentFormProps> = ({ selectedPlan, onBack })
             inline: true
           },
           {
-            name: "💰 Pricing",
-            value: `**Price:** ₹${selectedPlan.price}/mo`,
-            inline: true
+              name: '💰 Pricing',
+              value: `**Original Price:** ₹${selectedPlan.price}/month\n${appliedCoupon ? `**Coupon:** \`${appliedCoupon.code}\` (${appliedCoupon.discount_percentage}% off)\n` : ''}**Final Price:** ₹${calculateTotal()}/month`
           },
           {
             name: "🎯 Server Purpose",
@@ -156,13 +187,14 @@ const VPSPaymentForm: React.FC<VPSPaymentFormProps> = ({ selectedPlan, onBack })
         userId: (session?.user as any)?.id,
         type: 'vps' as const,
         planName: selectedPlan.name,
-        price: `₹${selectedPlan.price}/mo`,
+        price: `₹${calculateTotal()}/mo`,
         status: 'pending' as const,
         customerInfo: {
           ...formData,
           serverName: formData.serverPurpose || selectedPlan.name,
           password: password,
         },
+        couponId: appliedCoupon?.id
     };
     
     const result = await createOrderAction(orderPayload);
@@ -172,8 +204,7 @@ const VPSPaymentForm: React.FC<VPSPaymentFormProps> = ({ selectedPlan, onBack })
         await sendToDiscord(result.order.id, password);
         setIsSubmitted(true);
     } else {
-        console.error("Failed to create VPS order:", result.message);
-        alert(`Error: ${result.message}`);
+        toast.error(result.message || 'Failed to create VPS order');
     }
     
     setIsSubmitting(false);
@@ -235,7 +266,7 @@ const VPSPaymentForm: React.FC<VPSPaymentFormProps> = ({ selectedPlan, onBack })
                 <p className={`${themeStyles.textSecondary} text-sm capitalize`}>{selectedPlan.cpu} VPS</p>
               </div>
               <div className="text-right flex-shrink-0">
-                <div className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>₹{selectedPlan.price}</div>
+                <div className={`text-lg sm:text-xl font-bold ${themeStyles.text} ${appliedCoupon ? 'line-through text-muted-foreground' : ''}`}>₹{selectedPlan.price}</div>
                 <div className={`text-xs sm:text-sm ${themeStyles.textSecondary}`}>/month</div>
               </div>
             </div>
@@ -257,13 +288,32 @@ const VPSPaymentForm: React.FC<VPSPaymentFormProps> = ({ selectedPlan, onBack })
                     </div>
                 </div>
             </div>
+            
+            <div className="space-y-4 mt-4">
+                <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} pt-4`}>
+                    <div className="flex items-center gap-2">
+                         <input type="text" value={couponCode} onChange={(e) => setCouponCode(e.target.value.toUpperCase())} placeholder="Coupon Code" className={`flex-grow px-3 py-2 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm`} disabled={!!appliedCoupon} />
+                         <button onClick={handleApplyCoupon} className={`${themeStyles.button} text-white px-4 py-2 rounded-lg font-semibold text-sm disabled:opacity-50`} disabled={isApplyingCoupon || !!appliedCoupon}>
+                            {isApplyingCoupon ? 'Applying...' : appliedCoupon ? 'Applied' : 'Apply'}
+                         </button>
+                    </div>
+                </div>
+                
+                 {appliedCoupon && (
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="text-green-400 flex items-center gap-2"><Ticket className="w-4 h-4"/>Coupon '{appliedCoupon.code}' applied</span>
+                        <span className="font-bold text-green-400">-{appliedCoupon.discount_percentage}%</span>
+                    </div>
+                )}
 
-            <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} mt-4 pt-4`}>
-              <div className="flex justify-between items-center">
-                <span className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>Total</span>
-                <span className="text-xl sm:text-2xl font-bold text-blue-400">₹{selectedPlan.price}/mo</span>
-              </div>
+                <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} pt-4`}>
+                    <div className="flex justify-between items-center">
+                        <span className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>Total</span>
+                        <span className="text-xl sm:text-2xl font-bold text-blue-400">₹{calculateTotal()}/mo</span>
+                    </div>
+                </div>
             </div>
+
           </div>
 
           <div className={`${themeStyles.card} rounded-2xl p-4 sm:p-6 order-1 xl:order-2`}>
@@ -316,7 +366,7 @@ const VPSPaymentForm: React.FC<VPSPaymentFormProps> = ({ selectedPlan, onBack })
               <button type="submit" disabled={isSubmitting || !formData.firstName || !formData.lastName || !formData.email || !formData.discordUsername} className={`w-full ${themeStyles.button} disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 sm:py-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center text-sm sm:text-base`}>
                 {isSubmitting ? (
                    <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white mr-2 sm:mr-3"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:h-5 border-b-2 border-white mr-2 sm:mr-3"></div>
                     Processing Order...
                   </div>
                 ) : (

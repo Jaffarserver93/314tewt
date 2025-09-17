@@ -4,9 +4,13 @@
 import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
-import { ArrowLeft, User, Mail, MessageCircle, Send, CheckCircle, Globe, ExternalLink, Copy, Home as HomeIcon, Building, MapPin, Hash, LandPlot } from 'lucide-react';
+import { ArrowLeft, User, Mail, MessageCircle, Send, CheckCircle, Globe, ExternalLink, Copy, Home as HomeIcon, Building, MapPin, Hash, LandPlot, Ticket } from 'lucide-react';
 import { createOrderAction } from '@/app/actions';
+import { validateCouponAction } from '@/app/admin/coupons/actions';
 import type { TLD } from '@/lib/types';
+import type { Coupon } from '@/app/admin/coupons/types';
+import toast from 'react-hot-toast';
+
 
 interface DomainPaymentFormProps {
   selectedDomain: {domain: string, tld: TLD};
@@ -36,6 +40,11 @@ const DomainPaymentForm: React.FC<DomainPaymentFormProps> = ({ selectedDomain, o
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [copied, setCopied] = useState(false);
+  
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+
 
   const fullDomainName = `${selectedDomain.domain}${selectedDomain.tld.name}`;
 
@@ -76,6 +85,32 @@ const DomainPaymentForm: React.FC<DomainPaymentFormProps> = ({ selectedDomain, o
             }
         }));
     }
+  };
+  
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+        toast.error('Please enter a coupon code.');
+        return;
+    }
+    setIsApplyingCoupon(true);
+    const result = await validateCouponAction(couponCode, (session?.user as any).id);
+    if (result.success && result.coupon) {
+        setAppliedCoupon(result.coupon);
+        toast.success(result.message);
+    } else {
+        setAppliedCoupon(null);
+        toast.error(result.message);
+    }
+    setIsApplyingCoupon(false);
+  };
+  
+  const calculateTotal = () => {
+    const originalPrice = selectedDomain.tld.price;
+    if (appliedCoupon) {
+      const discount = originalPrice * (appliedCoupon.discount_percentage / 100);
+      return Math.round(originalPrice - discount);
+    }
+    return originalPrice;
   };
 
   const getThemeClasses = () => {
@@ -122,8 +157,8 @@ const DomainPaymentForm: React.FC<DomainPaymentFormProps> = ({ selectedDomain, o
               value: `${formData.address.line1}\n${formData.address.line2 ? formData.address.line2 + '\n' : ''}${formData.address.city}, ${formData.address.state} ${formData.address.postalCode}\n${formData.address.country}`
           },
           {
-              name: '💰 Price',
-              value: `**Total:** ₹${selectedDomain.tld.price}/year`
+              name: '💰 Pricing',
+              value: `**Original Price:** ₹${selectedDomain.tld.price}/year\n${appliedCoupon ? `**Coupon:** \`${appliedCoupon.code}\` (${appliedCoupon.discount_percentage}% off)\n` : ''}**Final Price:** ₹${calculateTotal()}/year`
           }
       ],
       timestamp: new Date().toISOString(),
@@ -144,7 +179,7 @@ const DomainPaymentForm: React.FC<DomainPaymentFormProps> = ({ selectedDomain, o
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!session?.user) {
-        alert("You must be logged in to place an order.");
+        toast.error("You must be logged in to place an order.");
         return;
     }
     setIsSubmitting(true);
@@ -153,7 +188,7 @@ const DomainPaymentForm: React.FC<DomainPaymentFormProps> = ({ selectedDomain, o
         userId: (session.user as any).id,
         type: 'domain' as const,
         planName: fullDomainName,
-        price: `${selectedDomain.tld.price}/year`,
+        price: `₹${calculateTotal()}/year`,
         status: 'pending' as const,
         customerInfo: {
           firstName: formData.firstName,
@@ -161,7 +196,8 @@ const DomainPaymentForm: React.FC<DomainPaymentFormProps> = ({ selectedDomain, o
           email: formData.email,
           discordUsername: formData.discordUsername,
           address: formData.address,
-        }
+        },
+        couponId: appliedCoupon?.id
     };
     
     const result = await createOrderAction(orderPayload);
@@ -171,8 +207,7 @@ const DomainPaymentForm: React.FC<DomainPaymentFormProps> = ({ selectedDomain, o
         await sendToDiscord(result.order.id);
         setIsSubmitted(true);
     } else {
-        console.error("Failed to create domain order:", result.message);
-        alert(`Error: ${result.message || 'An unknown error occurred.'}`);
+        toast.error(result.message || 'An unknown error occurred.');
     }
     
     setIsSubmitting(false);
@@ -257,18 +292,36 @@ const DomainPaymentForm: React.FC<DomainPaymentFormProps> = ({ selectedDomain, o
                  <p className={`${themeStyles.textSecondary} text-sm`}>1 Year Registration</p>
               </div>
               <div className="text-right flex-shrink-0">
-                <div className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>
+                <div className={`text-lg sm:text-xl font-bold ${themeStyles.text} ${appliedCoupon ? 'line-through text-muted-foreground' : ''}`}>
                   ₹{selectedDomain.tld.price}
                 </div>
                 <div className={`text-xs sm:text-sm ${themeStyles.textSecondary}`}>/year</div>
               </div>
             </div>
             
-            <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} mt-6 pt-4`}>
-              <div className="flex justify-between items-center">
-                <span className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>Total</span>
-                <span className="text-xl sm:text-2xl font-bold text-pink-400">₹{selectedDomain.tld.price}/year</span>
-              </div>
+            <div className="space-y-4 mt-4">
+                <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} pt-4`}>
+                    <div className="flex items-center gap-2">
+                         <input type="text" value={couponCode} onChange={(e) => setCouponCode(e.target.value.toUpperCase())} placeholder="Coupon Code" className={`flex-grow px-3 py-2 ${themeStyles.input} border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm`} disabled={!!appliedCoupon} />
+                         <button onClick={handleApplyCoupon} className={`${themeStyles.button} text-white px-4 py-2 rounded-lg font-semibold text-sm disabled:opacity-50`} disabled={isApplyingCoupon || !!appliedCoupon}>
+                            {isApplyingCoupon ? 'Applying...' : appliedCoupon ? 'Applied' : 'Apply'}
+                         </button>
+                    </div>
+                </div>
+                
+                 {appliedCoupon && (
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="text-green-400 flex items-center gap-2"><Ticket className="w-4 h-4"/>Coupon '{appliedCoupon.code}' applied</span>
+                        <span className="font-bold text-green-400">-{appliedCoupon.discount_percentage}%</span>
+                    </div>
+                )}
+
+                <div className={`border-t ${theme === 'light' ? 'border-gray-200' : 'border-white/20'} pt-4`}>
+                    <div className="flex justify-between items-center">
+                        <span className={`text-lg sm:text-xl font-bold ${themeStyles.text}`}>Total</span>
+                        <span className="text-xl sm:text-2xl font-bold text-pink-400">₹{calculateTotal()}/year</span>
+                    </div>
+                </div>
             </div>
           </div>
 
@@ -350,4 +403,3 @@ const DomainPaymentForm: React.FC<DomainPaymentFormProps> = ({ selectedDomain, o
 };
 
 export default DomainPaymentForm;
-
