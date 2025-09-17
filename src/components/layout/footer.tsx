@@ -39,7 +39,7 @@ export function Footer() {
             <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
               <li className="hover:text-primary transition-colors"><Link href="/domains">Domain Registration</Link></li>
               <li className="hover:text-primary transition-colors"><Link href="/hosting">Minecraft Hosting</Link></li>
-              <li className="hover:text-primary transition-colors"><Link href="/vps">VPS Hosting</Link></li>
+              <li className="hover:text-primary transition-colors"><Link href="#">VPS Hosting</Link></li>
               <li className="hover:text-primary transition-colors"><Link href="/support">24/7 Support</Link></li>
             </ul>
           </div>
