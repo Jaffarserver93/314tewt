@@ -12,6 +12,7 @@ import ScrollToPlansButton from './ScrollToPlansButton';
 import { supabase } from '@/lib/supabase';
 import BackButton from './back-button';
 
+export const revalidate = 0;
 
 const features = [
   {

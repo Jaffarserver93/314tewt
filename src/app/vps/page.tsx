@@ -10,6 +10,7 @@ import type { VpsPlan } from '@/lib/types';
 import BackButton from '@/app/hosting/back-button';
 import { supabase } from '@/lib/supabase';
 
+export const revalidate = 0;
 
 const features = [
   {

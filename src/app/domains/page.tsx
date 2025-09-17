@@ -3,6 +3,8 @@ import { supabase } from '@/lib/supabase';
 import type { TLD, DomainFeature } from '@/lib/types';
 import DomainsClientPage from './domains-client-page';
 
+export const revalidate = 0;
+
 async function getData(): Promise<{ tlds: TLD[], features: DomainFeature[] }> {
     const tldsPromise = supabase
         .from('tlds')
@@ -48,4 +50,3 @@ export default async function DomainsPage() {
 
     return <DomainsClientPage initialTlds={tlds} features={features} />;
 }
-
