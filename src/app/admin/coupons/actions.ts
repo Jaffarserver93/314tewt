@@ -2,9 +2,9 @@
 'use server';
 
 import { z } from 'zod';
-import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
 import type { CouponWithRedemptions } from './types';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 const couponSchema = z.object({
   code: z.string().min(3).max(20).toUpperCase(),
@@ -13,6 +13,7 @@ const couponSchema = z.object({
 });
 
 export async function getCoupons(): Promise<CouponWithRedemptions[]> {
+    const supabase = await createSupabaseServerClient(true);
     const { data, error } = await supabase
         .from('coupons')
         .select(`
@@ -41,6 +42,7 @@ export async function getCoupons(): Promise<CouponWithRedemptions[]> {
 
 export async function createCouponAction(values: z.infer<typeof couponSchema>) {
   try {
+    const supabase = await createSupabaseServerClient(true);
     const parsedValues = couponSchema.parse(values);
     
     // Check if coupon code already exists
@@ -63,7 +65,11 @@ export async function createCouponAction(values: z.infer<typeof couponSchema>) {
         usage_count: 0,
         is_active: true,
     });
-    if (error) throw error;
+
+    if (error) {
+      console.error('Supabase error:', error);
+      throw new Error(error.message || "An unknown error occurred with Supabase.");
+    }
     
     revalidatePath('/admin/coupons');
     const coupons = await getCoupons();
@@ -72,6 +78,7 @@ export async function createCouponAction(values: z.infer<typeof couponSchema>) {
     if (error instanceof z.ZodError) {
         return { success: false, message: error.errors.map(e => e.message).join(', ') };
     }
+    console.error("Caught exception in createCouponAction:", error);
     return { success: false, message: error.message || "Failed to create coupon." };
   }
 }

@@ -188,7 +188,7 @@ export default function CouponsClientPage({ initialCoupons }: CouponsClientPageP
                   <FormItem>
                       <FormLabel>Coupon Code</FormLabel>
                       <div className="flex gap-2">
-                          <FormControl><Input placeholder="SAVE20" {...field} style={{textTransform: 'uppercase'}} /></FormControl>
+                          <FormControl><Input placeholder="SAVE20" {...field} style={{textTransform: 'uppercase'}} onChange={e => field.onChange(e.target.value.toUpperCase())} /></FormControl>
                           <Button type="button" variant="outline" onClick={generateRandomCode}>Generate</Button>
                       </div>
                       <FormMessage />
