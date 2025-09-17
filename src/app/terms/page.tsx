@@ -1,45 +1,59 @@
-
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Scale, FileText, UserCheck, Server, Ban, Shield, Handshake } from "lucide-react";
+import { Scale, FileText, UserCheck, Server, Ban, Shield, Handshake, CreditCard, Tag, BarChart, UserX, MessageSquare, AlertTriangle, Lock } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const termsSections = [
   {
-    icon: <FileText className="w-6 h-6" />,
-    title: "1. Acceptance of Terms",
-    content: "By accessing and using the services provided by JXFRCloud™, you accept and agree to be bound by the terms and provision of this agreement. In addition, when using these particular services, you shall be subject to any posted guidelines or rules applicable to such services."
+    icon: <Shield className="w-6 h-6" />,
+    title: "1. Acceptable Use",
+    content: "Servers must not be used for illegal, harmful, or unethical activities, including hosting prohibited content, resource abuse, or hate speech. Violations will lead to suspension or termination without refunds."
   },
   {
-    icon: <UserCheck className="w-6 h-6" />,
-    title: "2. User Account",
-    content: "You are responsible for maintaining the confidentiality of your account and password and for restricting access to your computer. You agree to accept responsibility for all activities that occur under your account or password."
+    icon: <Lock className="w-6 h-6" />,
+    title: "2. Account Security",
+    content: "Keep your account safe and secure. Any actions taken under your account are your responsibility."
+  },
+  {
+    icon: <CreditCard className="w-6 h-6" />,
+    title: "3. Payments and Refunds",
+    content: "Payments are required for all paid services. All sales are final, and no refunds will be issued."
+  },
+  {
+    icon: <Tag className="w-6 h-6" />,
+    title: "4. Pricing and Negotiations",
+    content: "Please avoid excessive bargaining, especially on VPS plans. Our pricing ensures quality and sustainability."
+  },
+  {
+    icon: <BarChart className="w-6 h-6" />,
+    title: "5. Service Uptime",
+    content: "While we strive for 99% uptime, uninterrupted service cannot be guaranteed."
   },
   {
     icon: <Server className="w-6 h-6" />,
-    title: "3. Service Provision",
-    content: "We provide various hosting and domain registration services. We reserve the right to suspend or terminate services at any time for any reason, including but not limited to, violation of our Acceptable Use Policy."
+    title: "6. Data Responsibility and Backups",
+    content: "You are responsible for backing up your data. Backup services are not guaranteed for free servers."
   },
   {
-    icon: <Ban className="w-6 h-6" />,
-    title: "4. Prohibited Uses",
-    content: "You are prohibited from using our services for any illegal or unauthorized purpose. This includes, but is not limited to, distributing malware, hosting phishing sites, sending spam, or engaging in any activity that disrupts our services or other users."
+    icon: <UserX className="w-6 h-6" />,
+    title: "7. Account Suspension and Termination",
+    content: "We reserve the right to suspend or terminate your account for violations of our terms or failure to make payments."
   },
   {
-    icon: <Scale className="w-6 h-6" />,
-    title: "5. Limitation of Liability",
-    content: "In no event shall JXFRCloud™, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses."
+    icon: <MessageSquare className="w-6 h-6" />,
+    title: "8. Support Policy",
+    content: "We provide support for active services only. Support queries must be submitted through approved channels, and response times may vary based on the nature of the request."
   },
   {
-    icon: <Shield className="w-6 h-6" />,
-    title: "6. Indemnification",
-    content: "You agree to defend, indemnify and hold harmless JXFRCloud™ and its licensee and licensors, and their employees, contractors, agents, officers and directors, from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, and expenses."
+    icon: <AlertTriangle className="w-6 h-6" />,
+    title: "9. Fraud Prevention",
+    content: "We actively monitor for fraudulent activity. Any detected fraud will result in immediate termination of services."
   },
   {
-    icon: <Handshake className="w-6 h-6" />,
-    title: "7. Changes to Terms",
-    content: "We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will provide notice of any changes by posting the new Terms of Service on this page. Your continued use of the service after any such changes constitutes your acceptance of the new Terms."
+    icon: <FileText className="w-6 h-6" />,
+    title: "Terms of Service Updates",
+    content: "We may revise these terms occasionally. Users will be notified of any significant updates."
   }
 ];
 
