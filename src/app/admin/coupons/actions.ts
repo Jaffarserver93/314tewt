@@ -131,7 +131,18 @@ export async function validateCouponAction(code: string, userId: string): Promis
 
 export async function redeemCoupon(couponId: string, userId: string) {
     const supabaseAdmin = await createSupabaseServerClient(true);
-    
+
+    const { data: coupon, error: couponError } = await supabaseAdmin
+        .from('coupons')
+        .select('usage_count, max_uses')
+        .eq('id', couponId)
+        .single();
+
+    if (couponError || !coupon) {
+        console.error(`Failed to fetch coupon ${couponId} before redemption.`);
+        return; 
+    }
+
     const { error: redemptionError } = await supabaseAdmin
         .from('coupon_redemptions')
         .insert({ coupon_id: couponId, user_id: userId });
@@ -146,6 +157,19 @@ export async function redeemCoupon(couponId: string, userId: string) {
         });
         if (rpcError) {
             console.error(`Failed to increment usage for coupon ${couponId}:`, rpcError);
+        }
+
+        // Deactivate coupon if max uses is reached
+        const newUsageCount = coupon.usage_count + 1;
+        if (newUsageCount >= coupon.max_uses) {
+            const { error: updateError } = await supabaseAdmin
+                .from('coupons')
+                .update({ is_active: false })
+                .eq('id', couponId);
+            
+            if (updateError) {
+                console.error(`Failed to deactivate coupon ${couponId}:`, updateError);
+            }
         }
     }
 }

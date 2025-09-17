@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreHorizontal, Eye, Trash2, TicketPercent, Tag, Users, Calendar } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Eye, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -30,6 +30,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 
 
 const couponSchema = z.object({
@@ -124,6 +125,7 @@ export default function CouponsClientPage({ initialCoupons }: CouponsClientPageP
                 <TableHead>Code</TableHead>
                 <TableHead>Discount</TableHead>
                 <TableHead>Usage</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Created At</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -138,6 +140,11 @@ export default function CouponsClientPage({ initialCoupons }: CouponsClientPageP
                         <span>{coupon.usage_count} / {coupon.max_uses}</span>
                         <Progress value={(coupon.usage_count / coupon.max_uses) * 100} className="w-24 h-2" />
                     </div>
+                  </TableCell>
+                   <TableCell>
+                    <Badge variant="outline" className={cn("capitalize", coupon.is_active ? 'text-green-400 border-green-400/50' : 'text-red-400 border-red-400/50')}>
+                        {coupon.is_active ? 'Active' : 'Inactive'}
+                    </Badge>
                   </TableCell>
                   <TableCell>{format(new Date(coupon.created_at), 'MMM d, yyyy')}</TableCell>
                   <TableCell>
@@ -165,7 +172,7 @@ export default function CouponsClientPage({ initialCoupons }: CouponsClientPageP
               ))}
               {coupons.length === 0 && (
                 <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">No coupons found.</TableCell>
+                    <TableCell colSpan={6} className="h-24 text-center">No coupons found.</TableCell>
                 </TableRow>
               )}
             </TableBody>
