@@ -4,6 +4,8 @@ import UsersClientPage from './users-client-page';
 import type { AppUser } from '@/types/next-auth';
 import { UsersProvider } from './users-context';
 
+export const revalidate = 0;
+
 async function getUsers(): Promise<AppUser[]> {
     const { data, error } = await supabase
         .from('users')
